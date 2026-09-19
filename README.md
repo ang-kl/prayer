@@ -1,46 +1,47 @@
 # Wholehearted
 
-Project: `prayer` · Method: W.H.E.M.S. Prayer · Version: 2.0
+W.H.E.M.S. Prayer - Will, Heart, Emotions, Mind and Soul.
 
-W.H.E.M.S. Prayer brings our Will, Heart, Emotions, Mind and Soul before God when seeking his help and direction. We thank him for the areas he has already shaped and ask him to transform the areas that are still struggling, so that our decision and response honour Christ.
+Preview redesign: **Pray / Journal / Scripture**, with in-page reading panels and a writing-first journal. No old title or prayer is displayed on the journal landing screen. Browse is explicit. No analytics, live AI, account login or cloud prayer storage is included.
 
-## Run
+## Run and build
 
-No application dependencies, account, database, AI API or environment variables.
+Node.js 22 or later. No packages required.
 
-```sh
+```
 node build.cjs
-python3 -m http.server 8000 --directory public
+npm test
+python -m http.server 8000 --directory public
 ```
 
-Open `http://localhost:8000`. Vercel settings are in `vercel.json`: an empty install command and a dependency-free static build publishing only four browser assets.
+`public/` is generated. Only the allowlisted browser assets are copied. For the test harness:
 
-## What changed
-
-The UI, state model, prayer composer and storage code were rewritten, rather than patched over v1. Each area accepts thanksgiving, a request, both, or neither. Written reflections are included in an editable prayer. Thanksgiving can start without a saved entry. Returning to a prayer creates a linked new entry without rewriting the original.
-
-The journal holds up to 100 local entries. Saving is explicit. Errors, quota failures, corrupt data and stale snapshots do not silently produce a successful-save message. Importing v1 is optional and preserves the original `wholehearted-prayer-v1` storage value. Exported files contain personal data and should be kept private. Backup export is provided; v2 backup-file re-import is not implemented yet.
-
-## Source and theological boundaries
-
-ESV.org reading links; STEP Bible and Blue Letter Bible passage-study links; Logos opens separately in the user's browser. There is no authenticated Logos integration, live Scripture API or automatic lexical retrieval. On-screen passage summaries and W.H.E.M.S. assignments are teaching applications, not verbatim Scripture or new revelation.
-
-No spiritual scores, salvation classifier, emotional-peace verdict or automatic decision approval. Soul is foundational; the app does not assume a person's faith. All nine fruits remain available without exclusive assignments. Revisit dates do not schedule notifications.
-
-## Privacy
-
-Application reflections never leave the browser through this code. The hosting service receives ordinary page requests. External sources are visited only when links are opened, with no reflections in the URL. Local storage is not encrypted by the app, not a cloud backup, and is separate for each browser/origin. Unsaved drafts are lost on reload. No analytics or external runtime scripts are included.
-
-## Tests
-
-```sh
-node --test tests/core.test.cjs
-# Optional UI testing only: install Python Playwright and a Chromium browser.
-python3 tests/browser.py
-# For environments that block browser navigation:
-BROWSER_MODE=dom python3 tests/browser.py
+```
+EVIDENCE_DIR=./evidence python tests/redesign-browser.py
 ```
 
-Tested on Node 22 and Chromium: 31 logic tests; 18 UI scenarios; widths 320, 390, 430, 768, 1024 and 1440. The recorded UI run used DOM mode: real app assets injected into Chromium with a storage fixture. This does not verify live networking, native browser persistence, response headers or Safari. The default HTTP mode is provided for those checks in an unrestricted environment.
+The harness requires Python Playwright and Chromium. It uses DOM injection with simulated localStorage, tab handoff and provider responses because local browser HTTP navigation was blocked in the development environment. Blob downloads are real. This is not native Safari/VoiceOver or live service evidence.
 
-`core.js` contains content, pure logic and storage helpers; `app.js` renders the UI; `styles.css` handles responsive layouts. No production deployment or main-branch replacement is authorised by this review branch. Existing GPL-3.0 licence retained unchanged.
+## ESV reader - configuration still required
+
+Set **ESV_API_KEY** as a secret server-side environment variable in the Vercel `prayer` project's **Preview** environment, then redeploy the preview. Obtain your own application key and review the conditions at https://api.esv.org/. Do not put a key in browser code, Git, screenshots or chat.
+
+Until configured, the reader shows a clear unavailable-text state. Context notes are labelled editorial and never substituted as ESV text. The API accepts only one of 15 public catalogue IDs (35 verses across those ranges), never arbitrary references or journal content. It has a bounded warm-instance cache and request guard; Crossway enforces account-wide limits. A deployment's HTTP/proxy configuration and provider access still require live verification.
+
+The ESV text is supplied by Crossway, not bundled or relicensed with this GPL source. It is not included in journal backups or HTML reading copies. Full API terms: https://api.esv.org/ and general permissions: https://www.crossway.org/permissions/.
+
+## Storage and history
+
+`core.js` retains the v2 model unchanged for migration. `journal.js` uses schema **3**, unrelated to app build numbering. Existing v2 entries are read in memory; only an explicit Save writes a v3 copy. Original v2 and v1 data is retained for rollback, not silently deleted. JSON restore adds missing IDs and skips existing IDs without overwriting them. Never confuse hidden journal excerpts with encryption.
+
+Editing preserves the previous wording as a revision; follow-ups are linked entries. Prayer date, creation and last update are distinct. Request status is the writer's assessment. Thanksgiving never automatically answers a request. Journals on preview and production origins do not synchronise.
+
+## Build identity
+
+`release.json` is the single numbering source. Its first revised-format build is **0.0.001**, not a reconstruction of historical deployment counts. Increase `build` for the next release candidate. `packageVersion` remains valid SemVer. Vercel inserts the actual Git commit and UTC build time into generated `build-info.js`; source is labelled unavailable when not supplied locally.
+
+## Scope and safeguards
+
+No spiritual scoring, divine verdict, salvation assessment, forced completion or automatic overwriting of prayer wording. The founding About text and all twelve poem lines remain intact. All built-in Scripture links resolve through the shared catalogue. Logos opens separately and is not connected to an owned library.
+
+Production must not be changed until the preview is explicitly approved. The existing GPL-3.0 licence is retained.

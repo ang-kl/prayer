@@ -1,0 +1,2 @@
+/* One design-token source for the app and self-contained HTML reading copies. */
+(function(root){'use strict';const css=`:root{--paper:#f7f6f1;--surface:#fffefa;--ink:#17362e;--muted:#56645c;--sage:#e9ede5;--line:#b2bdb3;--action:#214f3d;--focus:#79520e;--body:1.125rem;--meta:1rem;--section:1.5rem;--title:1.875rem;--sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--serif:Georgia,"Times New Roman",serif;--leading:1.65}`;const api={css};if(typeof module==='object'&&module.exports)module.exports=api;else root.WholeheartedTheme=api;})(globalThis);

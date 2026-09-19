@@ -1,60 +1,29 @@
-/* Readable, script-free HTML copies. No prayer data or files are uploaded. */
-(function (root) {
-  'use strict';
-  const C = typeof module === 'object' && module.exports ? require('./core.js') : root.WholeheartedCore;
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const link = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
-  const para = value => `<p class="export-text">${esc(value)}</p>`;
-  const stamp = value => {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? 'Date not recorded' : new Intl.DateTimeFormat('en-SG', {
-      dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Singapore'
-    }).format(d) + ' SGT';
-  };
-  function filename(raw) {
-    const d = C.normalise(raw), time = new Date(d.updatedAt || d.createdAt);
-    const date = Number.isNaN(time.getTime()) ? 'undated' : new Intl.DateTimeFormat('en-CA', {
-      year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Singapore'
-    }).format(time);
-    // Do not put the personal matter or names in a filename.
-    return `Wholehearted-${d.mode === 'thanks' ? 'Thanksgiving' : 'Prayer'}-${date}-${d.id.slice(-8)}.html`;
-  }
-  function article(raw, heading = 'h1') {
-    const d = C.normalise(raw), h = heading === 'h2' ? 'h2' : 'h1';
-    const mode = d.parentId ? 'Return to prayer' : d.mode === 'thanks' ? 'Thanksgiving' : 'Seeking help';
-    const section = (title, body) => `<section class="export-section"><h2>${title}</h2>${body}</section>`;
-    const reflections = C.AREAS.map(a => {
-      const r = d.areas[a.key];
-      const thanks = r.thank ? `<h4>Thanksgiving</h4>${para(r.thankNote.trim() || 'Thanksgiving selected; no additional note recorded.')}` : '';
-      const asks = r.ask ? `<h4>Request for help</h4>${para(r.askNote.trim() || 'Help requested; no additional note recorded.')}` : '';
-      return `<section class="export-area"><h3>${a.key} · ${a.name}</h3>${thanks}${asks}${!r.thank && !r.ask ? '<p>No reflection selected.</p>' : ''}<p class="export-sources">${link(C.esv(a.passage), a.passage + ' · ESV')} · ${link(C.step(a.step), 'STEP Bible')} · ${link('https://www.blueletterbible.org/esv/' + a.blb + '/', 'Blue Letter Bible')}</p></section>`;
-    }).join('');
-    const sourceLinks = [
-      link('https://www.esv.org/', 'ESV.org'), link('https://www.stepbible.org/', 'STEPBible.org'),
-      link('https://www.blueletterbible.org/', 'Blue Letter Bible'), link('https://app.logos.com/', 'Logos account')
-    ].join(' · ');
-    return `<article class="export-sheet">
-<header class="export-heading"><p class="export-brand">Wholehearted · W.H.E.M.S. Prayer</p><p>${mode}</p><${h}>${esc(d.topic || 'My prayer')}</${h}><p class="export-meta">Entry created: ${esc(stamp(d.createdAt))}<br>Entry updated: ${esc(stamp(d.updatedAt))}</p></header>
-${d.context ? section('What I am bringing to God', para(d.context)) : ''}
-${section('My prayer', para(d.prayer ?? C.compose(d)))}
-${section('My Scripture reflection', (d.gate ? `<p><strong>My recorded understanding:</strong> ${esc(C.GATES[d.gate][0])}</p>` : '') + para(d.scripture || 'No additional Scripture reflection recorded.'))}
-${section('My W.H.E.M.S. reflections', reflections)}
-${d.fruit.length ? section('Fruit I am asking the Spirit to grow', para(d.fruit.join(' · ')) + `<p>${link(C.esv('Galatians 5:22-25'), 'Galatians 5:22-25 · ESV')}</p>`) : ''}
-${section('My next faithful step', para(d.nextStep || 'No next step recorded.') + (d.revisit ? `<p>Revisit: ${esc(d.revisit)}. No reminder is scheduled.</p>` : ''))}
-${d.legacyNote ? section('Earlier thanksgiving note', para(d.legacyNote)) : ''}
-${section('Study sources', `<p class="export-sources">${sourceLinks}</p><p>These are study links, not live retrieval or lexical verification. Logos opens separately; this app does not access your library. External links need internet access.</p>`)}
-<footer class="export-footer"><p>A prayer aid, not a message from God. Scripture remains the authority. W.H.E.M.S. is a teaching aid, not a score or an assessment of salvation.</p><p>Private prayer copy. Keep it secure and share only deliberately. This readable HTML copy does not restore entries into the journal.</p></footer>
-</article>`;
-  }
-  const CSS = `
-*{box-sizing:border-box}html{color-scheme:light}body{margin:0;background:#f7f7f3;color:#172c25;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:18px;line-height:1.65}.export-sheet{max-width:820px;margin:32px auto;padding:36px;background:#fff;border:1px solid #c9d0ca;border-radius:18px;overflow-wrap:anywhere}.export-heading{border-bottom:2px solid #183c32;padding-bottom:16px}.export-brand{font-weight:750;letter-spacing:.03em}.export-meta,.export-footer{font-size:.88em;color:#47574f}h1{font-size:clamp(1.8rem,5vw,2.5rem);line-height:1.2}h2{font-size:1.35rem;line-height:1.3;margin:0 0 12px}h3{font-size:1.1rem;margin:0}h4{font-size:1rem;margin:12px 0 0}.export-section{margin-top:28px}.export-text{white-space:pre-wrap;overflow-wrap:anywhere}.export-area{border-left:3px solid #b2c3b8;padding:4px 0 4px 16px;margin:20px 0}.export-sources{font-size:.88em;line-height:2}a{color:#173f32;text-decoration:underline;text-underline-offset:3px}a:focus-visible{outline:3px solid #172c25;outline-offset:4px}.export-footer{border-top:1px solid #c9d0ca;margin-top:32px;padding-top:14px}@media(max-width:600px){body{font-size:17px}.export-sheet{margin:0;border:0;border-radius:0;padding:24px 18px}}@media print{@page{size:A4;margin:16mm}body{background:white;color:black;font-size:11pt}.export-sheet{margin:0;max-width:none;border:0;padding:0}h1,h2,h3,h4{break-after:avoid}.export-area{break-inside:avoid}a{color:inherit}.export-footer{color:inherit}}
-`;
-  function html(raw) {
-    const d = C.normalise(raw);
-    return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>Wholehearted · ${esc(d.topic || 'My prayer')}</title><style>${CSS}</style></head><body>${article(d)}</body></html>`;
-  }
-  const api = {filename, article, html};
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.WholeheartedExport = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+/* Reading copies only: no live ESV text, hidden deselected notes or scripts in downloads. */
+(function(root){'use strict';
+const isNode=typeof module==='object'&&module.exports;
+const J=isNode?require('./journal.js'):root.WholeheartedJournal,C=isNode?require('./core.js'):root.WholeheartedCore,S=isNode?require('./catalogue.js'):root.WholeheartedScripture,T=isNode?require('./theme.js'):root.WholeheartedTheme;
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const link=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(t)}</a>`;
+const p=x=>`<p class="pre">${esc(x)}</p>`;
+const stamp=s=>s&&!Number.isNaN(new Date(s).getTime())?new Intl.DateTimeFormat('en-SG',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Singapore'}).format(new Date(s))+' SGT':'Date not recorded';
+const type=d=>({request:'Request',thanksgiving:'Thanksgiving',mixed:'Mixed'})[d.entryType];
+function filename(raw){const d=J.normalise(raw),date=J.dateOnly(d.updatedAt||d.createdAt)||'undated';return `Wholehearted-${d.entryType==='thanksgiving'?'Thanksgiving':'Prayer'}-${date}-${d.id.slice(-8)}.html`;}
+function article(raw,heading='h1',build){const d=J.normalise(raw),h=heading==='h2'?'h2':'h1';const section=(title,body)=>`<section class="export-section"><h2>${title}</h2>${body}</section>`;
+const areas=C.AREAS.map(a=>{const r=d.areas[a.key],ref=S.byReference(a.passage);return `<section class="export-area"><h3>${a.key} · ${a.name}</h3>${r.thank?'<h4>Thanksgiving</h4>'+p(r.thankNote||'Thanksgiving selected; no additional note recorded.'):''}${r.ask?'<h4>Request for help</h4>'+p(r.askNote||'Help requested; no additional note recorded.'):''}${!r.thank&&!r.ask?'<p>No reflection selected.</p>':''}<p>${link(ref.esv,ref.ref+' · ESV')} · ${link(ref.step,'STEP Bible')} · ${link(ref.blb,'Blue Letter Bible')}</p></section>`;}).join('');
+return `<article class="export-sheet"><header><p class="eyebrow">Wholehearted · W.H.E.M.S. Prayer</p><${h}>${esc(d.topic||'Untitled prayer')}</${h}><p>${type(d)} · ${esc(stamp(d.prayedAt))}</p><p class="meta">Created: ${esc(stamp(d.createdAt))}<br>Updated: ${esc(stamp(d.updatedAt))}</p>${d.tags.length?p(d.tags.map(t=>'#'+t).join(' ')):''}</header>
+${section('My prayer',p(d.prayer??J.compose(d)))}
+${d.context?section('What this concerns',p(d.context)):''}
+${section('My Scripture reflection',(d.gate?p('My recorded understanding: '+C.GATES[d.gate][0]):'')+p(d.scripture||'No additional Scripture reflection recorded.')+d.referenceIds.map(id=>{const r=S.get(id);return r?'<p>'+link(r.esv,r.ref+' · ESV')+'</p>':'';}).join(''))}
+${section('My W.H.E.M.S. reflections',areas)}
+${d.fruit.length?section('Fruit I am asking the Spirit to grow',p(d.fruit.join(' · '))+link(S.get('galatians-5-22-25').esv,'Galatians 5:22-25 · ESV')):''}
+${d.advice?section('My discernment notes',p(d.advice)):''}
+${section('My next faithful step',p(d.nextStep||'No next step recorded.')+(d.revisit?p('Revisit: '+d.revisit+'. No reminder is scheduled.') :''))}
+${d.answerStatus||d.answerNote?section('My recorded response / outcome',(d.answerStatus?p(J.STATUSES[d.answerStatus]):'')+p(d.answerNote||'No additional outcome note recorded.')+'<p class="meta">This is the writer’s reflection, not a divine verdict made by the app.</p>'):''}
+${d.legacyNote?section('Earlier thanksgiving note',p(d.legacyNote)):''}
+${section('Study sources','<p>'+[link('https://www.esv.org/','ESV.org'),link('https://www.stepbible.org/','STEPBible.org'),link('https://www.blueletterbible.org/','Blue Letter Bible'),link('https://app.logos.com/','Logos account')].join(' · ')+'</p><p class="meta">These reading-copy links are not live retrieval or lexical verification. External study pages need internet access. Logos opens separately; your library is not connected.</p>')}
+<footer><p>A prayer aid, not a message from God. Scripture remains the authority.</p><p class="meta">Private reading copy. Share deliberately. The JSON backup, not this HTML, restores journal entries and revisions. Deselected notes and earlier revisions are not included in this reading copy.</p>${build?.version?'<p class="meta">Exported with Wholehearted build '+esc(build.version)+(build.sourceCommit?' · Source '+esc(build.sourceCommit.slice(0,12)):'')+'</p>':''}</footer></article>`;}
+const layout=`*{box-sizing:border-box}html{color-scheme:light}body{margin:0;background:var(--paper);color:var(--ink);font:var(--body)/var(--leading) var(--sans)}.export-sheet{max-width:840px;margin:24px auto;padding:32px;background:var(--surface);overflow-wrap:anywhere}h1{font:400 var(--title)/1.25 var(--serif)}h2{font:400 var(--section)/1.3 var(--serif)}h3,h4{font-size:var(--body)}p{margin:0 0 16px}.meta,.eyebrow{font-size:var(--meta);color:var(--muted)}.pre{white-space:pre-wrap;overflow-wrap:anywhere}.export-section{margin-top:28px}.export-area{border-left:2px solid var(--line);padding-left:20px;margin:20px 0}header,footer{border-bottom:1px solid var(--line);padding-bottom:20px}footer{border-bottom:0;border-top:1px solid var(--line);margin-top:32px;padding-top:20px}a{color:inherit;text-decoration:underline;text-underline-offset:4px;font-size:var(--body)}a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(max-width:600px){.export-sheet{margin:0;padding:24px 18px}}@media print{@page{size:A4;margin:16mm}body{background:white;font-size:11pt}.export-sheet{padding:0;margin:0;max-width:none;background:white}h1,h2,h3,h4{break-after:avoid}.meta,a{font-size:inherit}.export-area{break-inside:avoid}}`;
+function html(raw,build){const d=J.normalise(raw);return `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>Wholehearted · ${esc(d.topic||'Untitled prayer')}</title><style>${T.css}${layout}</style></head><body>${article(d,'h1',build)}</body></html>`;}
+function text(raw){const d=J.normalise(raw);return ['Wholehearted | W.H.E.M.S. Prayer',d.topic||'Untitled prayer',type(d)+' | '+stamp(d.prayedAt),d.prayer??J.compose(d),d.scripture?'My Scripture reflection: '+d.scripture:'',d.advice?'My discernment notes: '+d.advice:'',d.nextStep?'My next faithful step: '+d.nextStep:'',d.answerNote?'My recorded outcome: '+d.answerNote:'','A prayer aid, not a message from God. Scripture remains the authority.'].filter(Boolean).join('\n\n');}
+const api={filename,html,article,text};if(isNode)module.exports=api;else root.WholeheartedExport=api;
+})(globalThis);
