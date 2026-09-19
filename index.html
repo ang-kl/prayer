@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Wholehearted - W.H.E.M.S. Prayer brings our Will, Heart, Emotions, Mind and Soul before God when seeking his help and direction." />
+  <title>Wholehearted · W.H.E.M.S. Prayer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-hidden="true">W</div>
+      <div>
+        <h1>Wholehearted</h1>
+        <p>W.H.E.M.S. Prayer</p>
+      </div>
+    </div>
+    <button id="resetBtn" class="text-button" type="button">Start over</button>
+  </header>
+
+  <main id="app" class="app-shell">
+    <section id="homeView" class="view active" aria-labelledby="homeTitle">
+      <div class="hero-card">
+        <p class="eyebrow">Will · Heart · Emotions · Mind · Soul</p>
+        <h2 id="homeTitle">Bring your whole decision before God.</h2>
+        <p class="lead">Thank God for where he has already helped you, and ask him to transform what still needs his grace, so your decision and response honour Christ.</p>
+        <div class="stack-actions">
+          <button class="primary" type="button" data-action="new">Seek God's help</button>
+          <button class="secondary" type="button" data-action="review">Thank God for his help</button>
+        </div>
+      </div>
+
+      <section class="principle-card" aria-label="Important principle">
+        <h3>How Wholehearted works</h3>
+        <p><strong>Scripture comes first.</strong> W.H.E.M.S. does not reveal God's secret will and does not turn feelings into divine instructions. It helps you pray honestly, examine what is clear, and take the next faithful step.</p>
+      </section>
+
+      <section id="savedSection" class="saved-card hidden" aria-labelledby="savedTitle">
+        <div class="section-heading-row">
+          <h3 id="savedTitle">Continue a saved prayer</h3>
+          <button id="clearSavedBtn" class="text-button" type="button">Clear saved</button>
+        </div>
+        <div id="savedSummary"></div>
+        <button id="continueSavedBtn" class="secondary" type="button">Continue</button>
+      </section>
+    </section>
+
+    <section id="decisionView" class="view" aria-labelledby="decisionTitle">
+      <div class="step-head">
+        <span class="step-count">1 of 5</span>
+        <h2 id="decisionTitle">Name the decision</h2>
+        <p>Prayer begins with honesty about what you are actually deciding.</p>
+      </div>
+      <label for="decisionText">I am deciding whether…</label>
+      <textarea id="decisionText" rows="4" placeholder="For example: accept a job, make a purchase, respond to someone, take on a ministry…"></textarea>
+      <label for="whyText">Why does this matter? <span class="optional">Optional</span></label>
+      <textarea id="whyText" rows="3" placeholder="What could change for you or others?"></textarea>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="home">Back</button>
+        <button id="toScriptureBtn" class="primary" type="button">Bring this before God</button>
+      </div>
+    </section>
+
+    <section id="scriptureView" class="view" aria-labelledby="scriptureTitle">
+      <div class="step-head">
+        <span class="step-count">2 of 5</span>
+        <h2 id="scriptureTitle">What has God already made clear?</h2>
+        <p>Prayer does not make disobedience permissible. Where Scripture clearly speaks, obedience is the first question.</p>
+      </div>
+      <fieldset class="choice-group">
+        <legend>Which best describes this decision?</legend>
+        <label class="choice-card"><input type="radio" name="scriptureStatus" value="clear" /> <span><strong>Scripture clearly commands or forbids something.</strong><small>I should respond first to what God has already revealed.</small></span></label>
+        <label class="choice-card"><input type="radio" name="scriptureStatus" value="principles" /> <span><strong>There are biblical principles, but no direct command.</strong><small>I need wisdom to apply them faithfully.</small></span></label>
+        <label class="choice-card"><input type="radio" name="scriptureStatus" value="unsure" /> <span><strong>I am not sure.</strong><small>I need to study Scripture and seek wise counsel.</small></span></label>
+      </fieldset>
+      <div class="source-strip" aria-label="Study sources">
+        <a href="https://www.esv.org/" target="_blank" rel="noopener noreferrer">ESV.org</a>
+        <a href="https://www.stepbible.org/" target="_blank" rel="noopener noreferrer">STEPBible.org</a>
+        <a href="https://www.blueletterbible.org/" target="_blank" rel="noopener noreferrer">Blue Letter Bible</a>
+        <a href="https://app.logos.com/" target="_blank" rel="noopener noreferrer">Logos</a>
+      </div>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="decision">Back</button>
+        <button id="toWhemsBtn" class="primary" type="button">Pray through W.H.E.M.S.</button>
+      </div>
+    </section>
+
+    <section id="whemsView" class="view" aria-labelledby="whemsTitle">
+      <div class="step-head">
+        <span class="step-count">3 of 5</span>
+        <h2 id="whemsTitle">Pray through W.H.E.M.S.</h2>
+        <p>Mixed answers are normal. You can thank God for what is becoming clear and ask for help where you are still struggling.</p>
+      </div>
+      <div id="whemsCards" class="whems-grid"></div>
+      <div class="fruit-card">
+        <h3>Fruit especially needed</h3>
+        <p>Which qualities from <a href="https://www.esv.org/verses/Galatians+5:22-23/" target="_blank" rel="noopener noreferrer">Galatians 5:22-23</a> do you especially need as you respond?</p>
+        <div id="fruitChoices" class="chip-grid"></div>
+      </div>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="scripture">Back</button>
+        <button id="toPrayerBtn" class="primary" type="button">Shape my prayer</button>
+      </div>
+    </section>
+
+    <section id="prayerView" class="view" aria-labelledby="prayerTitle">
+      <div class="step-head">
+        <span class="step-count">4 of 5</span>
+        <h2 id="prayerTitle">Your prayer</h2>
+        <p>This prayer is assembled from your reflections. It is <strong>not</strong> a message from God.</p>
+      </div>
+      <article class="prayer-card">
+        <div id="prayerText" class="prayer-text"></div>
+      </article>
+      <div class="summary-grid">
+        <section class="summary-card">
+          <h3>Thank God for</h3>
+          <ul id="thankList"></ul>
+        </section>
+        <section class="summary-card">
+          <h3>Ask God for help with</h3>
+          <ul id="askList"></ul>
+        </section>
+      </div>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="whems">Back</button>
+        <button id="toNextStepBtn" class="primary" type="button">Choose next faithful step</button>
+      </div>
+    </section>
+
+    <section id="nextStepView" class="view" aria-labelledby="nextStepTitle">
+      <div class="step-head">
+        <span class="step-count">5 of 5</span>
+        <h2 id="nextStepTitle">Take the next faithful step</h2>
+        <p>You do not need every emotion to settle before obeying what is clear.</p>
+      </div>
+      <div id="processOutcome" class="outcome-card"></div>
+      <label for="nextStepText">Within the next 24-48 hours, I will…</label>
+      <textarea id="nextStepText" rows="3" placeholder="For example: seek counsel, check the facts, apologise, wait before buying, speak directly with the person…"></textarea>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="prayer">Back</button>
+        <button id="saveBtn" class="primary" type="button">Save prayer</button>
+      </div>
+      <p id="saveStatus" class="save-status" role="status" aria-live="polite"></p>
+      <button id="doneBtn" class="secondary full" type="button">Return home</button>
+    </section>
+
+    <section id="reviewView" class="view" aria-labelledby="reviewTitle">
+      <div class="step-head">
+        <span class="step-count">Review</span>
+        <h2 id="reviewTitle">Thank God and review</h2>
+        <p>Return to the same decision without pretending every struggle has disappeared.</p>
+      </div>
+      <div id="reviewEmpty" class="empty-card hidden">
+        <p>No saved prayer is available on this device yet.</p>
+        <button class="primary" type="button" data-action="new">Start a prayer</button>
+      </div>
+      <div id="reviewContent" class="hidden">
+        <section class="decision-recap">
+          <h3>Decision</h3>
+          <p id="reviewDecision"></p>
+        </section>
+        <label for="reviewNote">What has happened since you prayed?</label>
+        <textarea id="reviewNote" rows="4" placeholder="What became clearer? What remains difficult? Where did God provide help through Scripture, counsel, circumstances, repentance or endurance?"></textarea>
+        <fieldset class="choice-group compact">
+          <legend>What best describes where you are now?</legend>
+          <label class="choice-card"><input type="radio" name="reviewStatus" value="clearer" /> <span><strong>The decision became clearer.</strong></span></label>
+          <label class="choice-card"><input type="radio" name="reviewStatus" value="acted" /> <span><strong>I acted.</strong></span></label>
+          <label class="choice-card"><input type="radio" name="reviewStatus" value="waiting" /> <span><strong>I am still waiting.</strong></span></label>
+          <label class="choice-card"><input type="radio" name="reviewStatus" value="changed" /> <span><strong>Circumstances changed.</strong></span></label>
+          <label class="choice-card"><input type="radio" name="reviewStatus" value="different" /> <span><strong>The outcome was different from what I hoped.</strong></span></label>
+        </fieldset>
+        <button id="saveReviewBtn" class="primary full" type="button">Save thanksgiving note</button>
+        <p id="reviewStatusText" class="save-status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="nav-actions">
+        <button class="text-button" type="button" data-back="home">Back home</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p><strong>Wholehearted</strong> helps structure prayer and reflection. Scripture remains the authority.</p>
+    <nav aria-label="Bible study sources">
+      <a href="https://www.esv.org/" target="_blank" rel="noopener noreferrer">ESV</a>
+      <a href="https://www.stepbible.org/" target="_blank" rel="noopener noreferrer">STEP Bible</a>
+      <a href="https://www.blueletterbible.org/" target="_blank" rel="noopener noreferrer">Blue Letter Bible</a>
+      <a href="https://app.logos.com/" target="_blank" rel="noopener noreferrer">Logos</a>
+    </nav>
+  </footer>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
