@@ -1,0 +1,11 @@
+{
+  "name": "prayer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Wholehearted - W.H.E.M.S. Prayer",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node --test tests/core.test.cjs"
+  },
+  "engines": {"node": ">=20"}
+}
