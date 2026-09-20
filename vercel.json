@@ -1,10 +1,36 @@
 {
- "$schema":"https://openapi.vercel.sh/vercel.json",
- "framework":null,"installCommand":"","buildCommand":"node build.cjs","outputDirectory":"public","cleanUrls":true,
- "headers":[{"source":"/(.*)","headers":[
- {"key":"Content-Security-Policy","value":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"},
- {"key":"Referrer-Policy","value":"no-referrer"},
- {"key":"X-Content-Type-Options","value":"nosniff"},
- {"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=()"}
- ]}]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "node build.cjs",
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://www.esv.org; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/guidance.js": {
+      "maxDuration": 60
+    }
+  }
 }

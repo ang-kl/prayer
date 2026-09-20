@@ -1,3 +1,0 @@
-'use strict';
-// Temporary preview-only connectivity check; no secrets or prayer content are returned.
-module.exports=async(req,res)=>{res.setHeader('Cache-Control','no-store');if(process.env.VERCEL_ENV!=='preview'||req.method!=='GET')return res.status(404).end();try{const r=await fetch('https://static.esvmedia.org/crossref/crossref.min.js',{signal:AbortSignal.timeout(10000)});const s=await r.text();const matches=[...s.matchAll(/.{0,150}(?:https?:|crossref|iframe|passage|xhr|fetch\().{0,200}/g)].map(m=>m[0]);res.status(200).json({scriptStatus:r.status,openaiConfigured:!!process.env.openai_key,model:process.env.openai_model||null,esvConfigured:!!process.env.ESV_API_KEY,excerpts:matches.slice(-45)});}catch{res.status(502).json({error:'Source probe failed.'});}};

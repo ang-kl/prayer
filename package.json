@@ -1,1 +1,13 @@
-{"name":"prayer","version":"0.0.1","private":true,"description":"Wholehearted - a private prayer journal","scripts":{"build":"node build.cjs","test":"node --test tests/*.test.cjs"},"engines":{"node":">=22"}}
+{
+  "name": "prayer",
+  "version": "0.0.2",
+  "private": true,
+  "description": "Wholehearted - a private prayer journal",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
