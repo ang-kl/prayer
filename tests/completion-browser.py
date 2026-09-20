@@ -90,7 +90,7 @@ try:
       assert page.locator('.open-area').count()==5
       for key in KEYS: assert page.locator(f'#reflection-{key} textarea[data-guide-reply]').is_visible()
       assert page.locator('[data-prayer-form]').count()==3
-      assert 'Build 0.0.002' in page.locator('body').inner_text()
+      assert 'Build 0.0.003' in page.locator('body').inner_text()
     check('All five contextual areas and all three final prayer forms are open',opened)
     def consent():
       page.locator('[data-journey=issue]').fill(ISSUE);page.locator('[data-journey=context]').fill(CONTEXT)
@@ -234,7 +234,28 @@ try:
       page.evaluate("document.documentElement.style.fontSize=''")
       page.locator('[data-action=about]').click()
       assert page.locator('.poem-line').count()==12
-      assert 'Optional contextual guidance uses AI' in page.locator('#reader').inner_text()
+      about_text=page.locator('#reader').inner_text()
+      assert 'A simple background' in about_text
+      assert not re.search(r'Adrian|ChatGPT|ChatpGPT|\bLLM\b|founding conversation',about_text,re.I)
+      assert page.locator('.about-areas dt').count()==5
+      assert page.locator('.about-areas').is_visible()
+      page.locator('.about-section summary').click()
+      assert page.locator('.poem-line').first.is_visible()
+      assert page.locator('.poem-line').last.is_visible()
+      for width in [320,390,768,1024,1366]:
+        page.set_viewport_size({'width':width,'height':900})
+        assert page.locator('#reader-content').evaluate('(e)=>e.scrollWidth<=e.clientWidth+1'),width
+      page.set_viewport_size({'width':390,'height':844})
+      page.locator('#reader-content').evaluate('(e)=>e.scrollTop=0')
+      page.screenshot(path=str(OUT/'about-mobile.png'))
+      page.set_viewport_size({'width':1024,'height':900})
+      page.screenshot(path=str(OUT/'about-tablet.png'))
+      pages_before=len(ctx.pages)
+      page.locator('.about-areas a').first.click()
+      assert 'Luke 22:42' in page.locator('#reader-heading').inner_text()
+      assert len(ctx.pages)==pages_before
+      page.locator('[data-action=reader-back]').click()
+      assert 'A simple background' in page.locator('#reader-content').inner_text()
       page.keyboard.press('Escape')
     check('Enlarged text, original poem and updated About remain usable',zoom_about)
     def storage_fail():
