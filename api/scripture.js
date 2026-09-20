@@ -8,7 +8,7 @@ async function handler(req,res){
  if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'Method not allowed.'});}
  const q=req.query||{};if(Object.keys(q).some(k=>k!=='id')||typeof q.id!=='string'||!catalogue.get(q.id))return res.status(400).json({error:'Choose a passage from the Scripture index.'});
  const token=process.env.ESV_API_KEY;
- if(!token)return res.status(503).json({code:'SOURCE_NOT_CONFIGURED',error:'The ESV text connection is not enabled yet. The passage notes are available, but they are not the Bible text.'});
+ if(!token)return res.status(200).json({id:q.id,translation:'ESV',mode:'crossway-embed',source:catalogue.get(q.id).esv});
  const item=catalogue.get(q.id),now=Date.now();
  const c=cache.get(item.id);if(c&&now-c.at<ttl)return res.status(200).json(c.data);
  const m=Math.floor(now/60000);if(m!==minute){minute=m;requests=0;}

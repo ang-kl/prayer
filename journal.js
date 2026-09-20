@@ -2,6 +2,7 @@
    v2/v1 originals are never removed. Migration is in memory until an explicit Save. */
 (function(root){'use strict';
 const C=typeof module==='object'&&module.exports?require('./core.js'):root.WholeheartedCore;
+const G=typeof module==='object'&&module.exports?require('./guidance-core.js'):root.WholeheartedGuidance;
 const STORAGE='wholehearted-journal-v3',VERSION=3,MAX=100;
 const TYPES=['request','thanksgiving','mixed'],FORMS=['sentence','whems','personal'];
 const STATUSES={'':'Not recorded',waiting:'Waiting',partly:'Partly answered',answered:'Answered as requested',differently:'Answered differently',clearer:'Direction became clearer',changed:'Circumstances changed',unresolved:'No clear answer yet',closed:'Closed / no longer applicable'};
@@ -9,13 +10,14 @@ const txt=(v,n=2000)=>typeof v==='string'?v.slice(0,n):'';
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
 const validDate=s=>typeof s==='string'&&s.length<=40&&!Number.isNaN(new Date(s).getTime());
 function tags(v){return [...new Set((Array.isArray(v)?v:String(v||'').split(/[\s,]+/)).map(x=>String(x).replace(/^#+/,'').toLowerCase().replace(/[^\p{L}\p{N}_-]/gu,'').slice(0,32)).filter(Boolean))].slice(0,12);}
-function blank(type='request',now=new Date().toISOString(),id){const d=C.blank(type==='thanksgiving'?'thanks':'seek',now,id);return {...d,entryType:TYPES.includes(type)?type:'request',form:'sentence',prayer:'',tags:[],prayedAt:now,advice:'',answerStatus:'',answerNote:'',referenceIds:[],revisions:[]};}
+function blank(type='request',now=new Date().toISOString(),id){const d=C.blank(type==='thanksgiving'?'thanks':'seek',now,id);return {...d,entryType:TYPES.includes(type)?type:'request',form:'sentence',prayer:'',tags:[],prayedAt:now,advice:'',answerStatus:'',answerNote:'',referenceIds:[],revisions:[],journey:G.state(),prayerForms:G.forms()};}
 function normalise(raw){
  const d=C.normalise(raw);
  d.entryType=TYPES.includes(raw.entryType)?raw.entryType:d.mode==='thanks'?'thanksgiving':'request';d.mode=d.entryType==='thanksgiving'?'thanks':'seek';
  d.form=FORMS.includes(raw.form)?raw.form:'whems';d.tags=tags(raw.tags||[]);d.prayedAt=validDate(raw.prayedAt)?raw.prayedAt:validDate(d.createdAt)?d.createdAt:'';
  d.advice=txt(raw.advice);d.answerNote=txt(raw.answerNote);d.answerStatus=Object.hasOwn(STATUSES,raw.answerStatus)?raw.answerStatus:'';
  d.referenceIds=Array.isArray(raw.referenceIds)?[...new Set(raw.referenceIds.filter(s=>typeof s==='string'&&/^[a-z0-9-]{1,80}$/.test(s)))].slice(0,40):[];
+ d.journey=G.state(raw.journey);d.prayerForms=G.forms(raw.prayerForms);
  if(raw.revisions!==undefined&&!Array.isArray(raw.revisions))throw Error('Unrecognised revision history.');
  if((raw.revisions||[]).length>25)throw Error('This entry has reached its revision limit. Create a linked follow-up instead.');
  d.revisions=(raw.revisions||[]).map(r=>{if(!obj(r)||!obj(r.record)||!validDate(r.at))throw Error('Unrecognised revision history.');return {at:r.at,record:normalise({...r.record,revisions:[]})};});
@@ -40,7 +42,7 @@ function upsert(entries,raw,now=new Date().toISOString()){
  if(prior){d.createdAt=prior.createdAt;d.revisions=C.copy(prior.revisions||[]);const previous=normalise({...prior,revisions:[]});const compare=x=>JSON.stringify({...x,revisions:[],updatedAt:''});if(compare(previous)!==compare(d)){if(d.revisions.length>=25)throw Error('This entry has 25 revisions. Create a linked follow-up to preserve its history.');d.revisions.push({at:now,record:previous});}}
  d.updatedAt=now;return [d,...next];
 }
-function follow(prior,type='thanksgiving',now,id){const d=blank(type,now,id);d.topic=prior.topic;d.parentId=prior.id;return d;}
+function follow(prior,type='thanksgiving',now,id){const d=blank(type,now,id);d.topic=prior.topic;d.parentId=prior.id;if(prior.journey?.issue)d.journey.issue=prior.journey.issue;return d;}
 function compose(d){
  if(d.form==='personal')return d.prayer||'';
  if(d.form==='whems')return C.compose({...d,topic:d.topic.trim()||'what I am bringing before you',mode:d.entryType==='thanksgiving'?'thanks':'seek'});
@@ -50,7 +52,7 @@ function compose(d){
  const a=asks.length?'; please help me with '+asks.join('; '):'; guide my response by your Word';
  return 'Father, '+t+a+', so that my decision and response honour Christ.';
 }
-function meaningful(d){return !!(d.topic.trim()||d.prayer?.trim()||d.context.trim()||d.scripture.trim()||d.advice.trim()||d.nextStep.trim()||d.answerNote.trim()||C.KEYS.some(k=>d.areas[k].thank||d.areas[k].ask||d.areas[k].thankNote.trim()||d.areas[k].askNote.trim()));}
+function meaningful(d){return !!(d.journey?.issue?.trim()||d.prayerForms?.sentence?.trim()||d.prayerForms?.whems?.trim()||d.prayerForms?.extended?.trim()||d.topic.trim()||d.prayer?.trim()||d.context.trim()||d.scripture.trim()||d.advice.trim()||d.nextStep.trim()||d.answerNote.trim()||C.KEYS.some(k=>d.areas[k].thank||d.areas[k].ask||d.areas[k].thankNote.trim()||d.areas[k].askNote.trim()));}
 function browse(entries,{query='',type='',status='',tag='',from='',to=''}={}){const q=query.trim().toLowerCase();return entries.filter(d=>(!q||[d.topic,...d.tags].join(' ').toLowerCase().includes(q))&&(!type||d.entryType===type)&&(!status||d.answerStatus===status)&&(!tag||d.tags.includes(tag))&&(!from||dateOnly(d.prayedAt)>=from)&&(!to||dateOnly(d.prayedAt)<=to)).sort((a,b)=>Date.parse(b.prayedAt||b.createdAt)-Date.parse(a.prayedAt||a.createdAt));}
 function dateOnly(iso){if(!validDate(iso))return '';return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Singapore',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso));}
 function localInput(iso){if(!validDate(iso))return '';const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Singapore',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso));const d=Object.fromEntries(p.map(x=>[x.type,x.value]));return `${d.year}-${d.month}-${d.day}T${d.hour}:${d.minute}`;}
