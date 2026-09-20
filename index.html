@@ -1,26 +1,29 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#183c32">
-  <meta name="referrer" content="no-referrer">
-  <meta name="description" content="Wholehearted: bring your Will, Heart, Emotions, Mind and Soul before God. Give thanks, ask for help and take a faithful next step.">
-  <title>Wholehearted · W.H.E.M.S. Prayer</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="export-view.css">
-  <script src="core.js" defer></script>
-  <script src="export.js" defer></script>
-  <script src="app.js" defer></script>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#f7f6f1">
+ <meta name="referrer" content="no-referrer">
+ <meta name="description" content="Wholehearted - a quiet place for W.H.E.M.S. prayer, thanksgiving and a private journal.">
+ <title>Wholehearted · W.H.E.M.S. Prayer</title>
+ <link rel="stylesheet" href="styles.css">
+ <script src="build-info.js" defer></script><script src="theme.js" defer></script>
+ <script src="core.js" defer></script><script src="journal.js" defer></script>
+ <script src="catalogue.js" defer></script><script src="export.js" defer></script>
+ <script src="about.js" defer></script><script src="app.js" defer></script>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
-  <header class="header">
-    <a class="brand" href="#home" data-route="home" aria-label="Wholehearted home"><span class="brand-symbol" aria-hidden="true">w.</span><span>Wholehearted<small>W.H.E.M.S. PRAYER</small></span></a>
-    <nav aria-label="Main navigation"><a href="#home" data-route="home">Home</a><a href="#journal" data-route="journal">Journal</a><a href="#learn" data-route="learn">Learn</a></nav>
-  </header>
-  <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
-  <main id="main" tabindex="-1"><noscript><h1>Wholehearted</h1><p>Enable JavaScript to use the private prayer worksheet. There is no account or AI connection.</p><p>Bring your Will, Heart, Emotions, Mind and Soul before God. Thank him for help received and ask for help where you struggle.</p><a href="https://www.esv.org/verses/Philippians+4:6-7/">Read Philippians 4:6-7 in the ESV</a></noscript></main>
-  <footer class="footer"><span>Wholehearted <small>· 2.1</small></span><p>A prayer aid, not a message from God. Scripture remains the authority.</p><a href="#privacy" data-route="privacy">Privacy &amp; sources</a></footer>
+ <a class="skip" href="#main">Skip to content</a>
+ <header class="site-header">
+  <a class="brand" href="#pray" data-route="pray"><span aria-hidden="true" class="monogram">w.</span><span>Wholehearted<small>W.H.E.M.S. Prayer</small></span></a>
+  <nav aria-label="Main navigation"><a href="#pray" data-route="pray">Pray</a><a href="#journal" data-route="journal">Journal</a><a href="#scripture" data-route="scripture">Scripture</a></nav>
+  <button type="button" class="text-size" data-action="text-size" aria-label="Reading size" aria-haspopup="dialog">Aa</button>
+ </header>
+ <main id="main" tabindex="-1"><noscript><h1>Wholehearted</h1><p>Enable JavaScript to use this local prayer journal. Nothing is automatically saved.</p><p>Bring your Will, Heart, Emotions, Mind and Soul before God.</p></noscript></main>
+ <div id="notice" role="status" aria-live="polite" hidden></div>
+ <footer class="site-footer"><span>Wholehearted <span class="build-label" data-build></span></span><p>A prayer aid, not a message from God.</p><div><button data-action="learn" type="button">Learn</button><button data-action="about" type="button">About</button><button data-action="privacy" type="button">Privacy & sources</button></div></footer>
+ <dialog id="reader" aria-labelledby="reader-heading"><header class="reader-header"><button type="button" data-action="reader-back" hidden>← Back</button><h2 id="reader-heading" tabindex="-1">Read</h2><button type="button" data-action="reader-close">Close</button></header><div id="reader-content" class="reader-content"></div></dialog>
+ <input type="file" id="restore-file" accept="application/json,.json" hidden aria-label="Choose a journal backup">
 </body>
 </html>
