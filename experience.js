@@ -169,7 +169,13 @@
       if(e.target.closest('[data-return-origin]')){reveal(pending?.origin?.isConnected?pending.origin:lastReturn?.isConnected?lastReturn:'#guide-prayers');}
     });
     for(const type of ['input','change'])doc.addEventListener(type,()=>{requestAnimationFrame(updateErrors);});
-    doc.addEventListener('focusin',e=>{schedule();setTimeout(()=>avoidOverlap(e.target),120);});
+    doc.addEventListener('focusin',e=>{
+      schedule();
+      // A validation jump can move focus before a keyboard-settling timer fires.
+      // Never scroll back to the old button after revealing the required field.
+      const target=e.target;
+      setTimeout(()=>{if(doc.activeElement===target)avoidOverlap(target);},120);
+    });
     doc.addEventListener('focusout',schedule);
     root.addEventListener('scroll',schedule,{passive:true});root.addEventListener('resize',schedule,{passive:true});
     root.visualViewport?.addEventListener('resize',schedule,{passive:true});root.visualViewport?.addEventListener('scroll',schedule,{passive:true});
