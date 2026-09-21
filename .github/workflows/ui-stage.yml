@@ -1,0 +1,52 @@
+name: Verify guided feedback preview source
+on:
+  push:
+    branches: ['ui/guided-feedback-0-0-004']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Reconstruct and hash-check exact edited source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .ui-stage/stage.cjs prepare
+      - name: Build and regression tests - no paid model calls
+        working-directory: /tmp/wholehearted-ui-stage
+        run: |
+          node build.cjs
+          node --test tests/*.test.cjs
+      - name: Live official ESV passage checks
+        working-directory: /tmp/wholehearted-ui-stage
+        run: node tests/live-scripture.cjs
+      - name: Install test engines
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Existing journey through HTTP and native browser storage - AI fixture
+        working-directory: /tmp/wholehearted-ui-stage
+        env:
+          BROWSER_MODE: http
+          LIVE_ESV: '1'
+        run: python tests/completion-browser.py
+      - name: New contextual-feedback and navigation checks - Chromium fixture
+        working-directory: /tmp/wholehearted-ui-stage
+        env:
+          BROWSER_MODE: http
+        run: python tests/experience-browser.py
+      - name: New contextual-feedback and navigation checks - Linux WebKit fixture
+        working-directory: /tmp/wholehearted-ui-stage
+        env:
+          BROWSER_MODE: http
+          TEST_BROWSER: webkit
+        run: python tests/experience-browser.py
+      - name: Publish verified source blobs only - no branches changed
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .ui-stage/stage.cjs publish
