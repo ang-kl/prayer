@@ -1,7 +1,7 @@
-name: Wholehearted navigation and guidance checks
+name: Wholehearted in-place prayer and response checks
 on:
   push:
-    branches: ['ui/guided-feedback-0-0-004']
+    branches: ['fix/inplace-prayers-0-0-005']
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,3 +38,12 @@ jobs:
           BROWSER_MODE: http
           TEST_BROWSER: webkit
         run: python tests/experience-browser.py
+      - name: In-place prayer population and partial recovery (Chromium, AI fixture)
+        env:
+          BROWSER_MODE: http
+        run: python tests/inplace-browser.py
+      - name: In-place prayer population and partial recovery (Linux WebKit, AI fixture)
+        env:
+          BROWSER_MODE: http
+          TEST_BROWSER: webkit
+        run: python tests/inplace-browser.py

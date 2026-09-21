@@ -73,7 +73,7 @@ try:
       Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:k=>Object.hasOwn(data,k)?data[k]:null,setItem:(k,v)=>{if(window.failStorage)throw Error('quota');window.testWrites++;data[k]=String(v);},snapshot:()=>({...data})}});
       window.open=()=>null;
       }""")
-      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
+      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','teaching.js','prayer-output.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
       for name in files:page.add_script_tag(content=(ROOT/'public'/name).read_text())
       page.expose_function('fixture_response',response)
       page.evaluate("""()=>{window.fetch=async(url,opts)=>{
@@ -90,7 +90,7 @@ try:
       assert page.locator('.open-area').count()==5
       for key in KEYS: assert page.locator(f'#reflection-{key} textarea[data-guide-reply]').is_visible()
       assert page.locator('[data-prayer-form]').count()==3
-      assert 'Build 0.0.004' in page.locator('body').inner_text()
+      assert 'Build 0.0.005' in page.locator('body').inner_text()
     check('All five contextual areas and all three final prayer forms are open',opened)
     def consent():
       page.locator('[data-journey=issue]').fill(ISSUE);page.locator('[data-journey=context]').fill(CONTEXT)
@@ -112,7 +112,7 @@ try:
       assert count_calls()==2
     check('New replies are sent and updated guidance/options replace the earlier proposal',adapt)
     def confirm_prayers():
-      page.locator('[data-guide-action=prayers]').click()
+      page.locator('#guide-prayers-ai').click()
       assert 'confirm' in page.locator('.action-feedback').inner_text().lower();assert count_calls()==2
       page.locator('[data-journey-confirm]').check()
       page.locator('[data-field=nextStep]').fill('Offer a listening conversation at a time that suits her.')
@@ -120,7 +120,7 @@ try:
       page.locator('[data-field="areas.W.thankNote"]').fill('willingness to pause')
       page.locator('[data-field="areas.W.ask"]').check()
       page.locator('[data-field="areas.W.askNote"]').fill('listen without taking over')
-      page.locator('[data-guide-action=prayers]').click()
+      page.locator('#guide-prayers-ai').click()
       page.wait_for_function("document.querySelector('[data-prayer-form=extended]').value.length>1500")
       assert count_calls()==3
       for key in ['sentence','whems','extended']:assert page.locator(f'[data-prayer-form={key}]').input_value()

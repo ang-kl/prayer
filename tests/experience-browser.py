@@ -75,7 +75,7 @@ try:
       Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:k=>Object.hasOwn(data,k)?data[k]:null,setItem:(k,v)=>{if(window.failStorage)throw Error('quota');window.testWrites++;data[k]=String(v);},snapshot:()=>({...data})}});
       window.open=()=>null;
       }""")
-      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
+      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','teaching.js','prayer-output.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
       for name in files:page.add_script_tag(content=(ROOT/'public'/name).read_text())
       page.expose_function('fixture_response',response)
       page.evaluate("""()=>{window.fetch=async(url,opts)=>{
@@ -163,7 +163,7 @@ try:
       before=page.locator('[data-field="areas.W.askNote"]').input_value()
       page.locator('[data-fab=contents]').click();assert page.locator('#reader').is_visible()
       page.wait_for_function("document.getElementById('page-tools').hidden")
-      assert page.locator('.page-contents button').count()==16
+      assert page.locator('.page-contents button').count()==19
       page.screenshot(path=str(OUT/'contents-mobile.png'))
       page.locator('.page-contents [data-locate="#guide-save"]').click();settled()
       assert not page.locator('#reader').is_visible();focus_is('#guide-save')
