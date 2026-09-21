@@ -1,0 +1,17 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const E=require('../experience.js'),T=require('../theme.js');
+const text=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
+function luminance(hex){const channels=hex.match(/[0-9a-f]{2}/gi).map(h=>parseInt(h,16)/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4);return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;}
+function contrast(a,b){const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+const colours=Object.fromEntries([...T.css.matchAll(/--([\w-]+):(#\w{6})/g)].map(m=>[m[1],m[2]]));
+test('Phone viewport uses compact controls without device-name assumptions',()=>{const m=E.metrics({width:390,height:844,layoutHeight:844,layoutWidth:390});assert.equal(m.compact,true);assert.equal(m.keyboard,false);assert.equal(m.bottom,0);});
+test('Short landscape uses compact controls even at tablet width',()=>{assert.equal(E.metrics({width:932,height:430}).compact,true);assert.equal(E.metrics({width:1366,height:1024}).compact,false);});
+test('Visual viewport shrink moves controls above the keyboard',()=>{const m=E.metrics({width:390,height:340,layoutHeight:844,layoutWidth:390,editing:true,scale:1});assert.equal(m.bottom,504);assert.equal(m.keyboard,true);});
+test('Viewport offsets and pinch zoom are distinguished from a keyboard',()=>{const m=E.metrics({width:195,height:422,top:100,left:20,layoutHeight:844,layoutWidth:390,scale:2,editing:true});assert.equal(m.bottom,322);assert.equal(m.right,175);assert.equal(m.keyboard,false);});
+test('All pale reading surfaces meet normal-text contrast for primary and secondary text',()=>{for(const name of ['paper','surface','lavender','blush','apricot','ice','vanilla'])for(const ink of ['ink','muted'])assert.ok(contrast(colours[name],colours[ink])>=4.5,`${ink} on ${name}`);});
+test('Action text and field/control borders meet contrast targets',()=>{assert.ok(contrast(colours.action,colours.surface)>=4.5);for(const name of ['paper','surface','lavender','blush','apricot','ice','vanilla'])assert.ok(contrast(colours.line,colours[name])>=3,name);});
+test('Viewport and feedback helper neither reads journal nor makes requests',()=>{assert.doesNotMatch(text('experience.js'),/localStorage|sessionStorage|\bfetch\(|XMLHttpRequest|\.checked\s*=/);});
+test('Prerequisite validation precedes regenerating prayers and sending an AI request',()=>{const s=text('journey-ui.js');assert.ok(s.indexOf('UX.requireActions(missing')<s.indexOf("!confirm('Replace the three"));assert.ok(s.indexOf('UX.requireActions(missing')<s.indexOf("fetch('/api/guidance'"));assert.ok(s.includes("selector:'#guidance-confirm'"));assert.ok(s.includes("selector:'#guidance-consent'"));});
+test('Styles preserve readable type and include reduced-motion, safe-area and high-contrast handling',()=>{const css=text('experience.css');for(const token of ['prefers-reduced-motion','forced-colors','safe-area-inset','orientation:landscape','data-keyboard','border:2px','48px'])assert.ok(css.includes(token),token);});
+test('Floating controls and field hints use named actions and ARIA associations',()=>{const s=text('experience.js');for(const token of ['Open table of contents','Scroll up one screen','Scroll down one screen','aria-describedby','aria-invalid','Before we continue','No AI request has been sent automatically'])assert.ok(s.includes(token),token);});
