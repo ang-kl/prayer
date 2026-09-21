@@ -6,6 +6,12 @@ const repo='ang-kl/prayer',root='/tmp/wholehearted-ui-stage';
 const encoded=[0,1].map(n=>fs.readFileSync(path.join(__dirname,'part-'+n+'.txt'),'utf8')).join('');
 if(crypto.createHash('sha256').update(encoded).digest('hex')!=='abfe2de5b1694c84bf6bbf232bb3eae5da724adcea2518d8dae83c522e97a885')throw Error('Source transport integrity failure');
 const manifest=JSON.parse(zlib.brotliDecompressSync(Buffer.from(encoded,'base64')).toString('utf8'));
+// Correct a test-runner argument, not application code: WebKit has no --no-sandbox switch.
+const testFile=manifest.find(e=>e.path==='tests/experience-browser.py');
+const oldLaunch="    kwargs={'args':['--no-sandbox']}\n    if os.environ.get('CHROMIUM_PATH'): kwargs['executable_path']=os.environ['CHROMIUM_PATH']\n    elif MODE=='dom': kwargs['executable_path']='/usr/bin/chromium'\n    browser=getattr(pw,os.environ.get('TEST_BROWSER','chromium')).launch(**kwargs)";
+const newLaunch="    engine=os.environ.get('TEST_BROWSER','chromium')\n    kwargs={'args':['--no-sandbox']} if engine=='chromium' else {}\n    if engine=='chromium':\n      if os.environ.get('CHROMIUM_PATH'): kwargs['executable_path']=os.environ['CHROMIUM_PATH']\n      elif MODE=='dom': kwargs['executable_path']='/usr/bin/chromium'\n    browser=getattr(pw,engine).launch(**kwargs)";
+if(typeof testFile?.text!=='string'||testFile.text.split(oldLaunch).length!==2)throw Error('Unexpected browser test source');
+testFile.text=testFile.text.replace(oldLaunch,newLaunch);testFile.sha='c55be2db719634fcab18a22bc75066f00162c5a1';
 const allowed=new Set(['experience.js','experience.css','journey-ui.js','app.js','theme.js','index.html','build.cjs','release.json','package.json','tests/about-introduction.test.cjs','tests/design-export.test.cjs','tests/journal.test.cjs','tests/completion-browser.py','tests/experience.test.cjs','tests/experience-browser.py','.github/workflows/preview-check.yml']);
 const hash=b=>crypto.createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 async function api(endpoint,body){const r=await fetch('https://api.github.com/repos/'+repo+'/git/'+endpoint,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+process.env.GITHUB_TOKEN,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},body:body?JSON.stringify(body):undefined});if(!r.ok)throw Error('Source-blob staging HTTP '+r.status);return r.json();}
