@@ -18,7 +18,7 @@ const labels={request:'Request',thanksgiving:'Thanksgiving',mixed:'Mixed'};
 const stamp=s=>s&&!Number.isNaN(new Date(s).getTime())?new Intl.DateTimeFormat('en-SG',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Singapore'}).format(new Date(s))+' SGT':'Date not recorded';
 const title=d=>d.topic.trim()||'Untitled prayer';
 function heading(h,p,action=''){return `<div class="page-heading"><div><h1 tabindex="-1">${h}</h1><p class="muted">${p}</p></div>${action}</div>`;}
-function notify(text,actions=''){const n=document.getElementById('notice');n.textContent=text;n.hidden=!text;if(actions){const box=document.createElement('div');box.className='actions';box.innerHTML=actions;n.append(box);}if(text&&!reader.open)n.scrollIntoView({block:'nearest'});}
+function notify(text,actions=''){window.WholeheartedExperience.notify(text,actions);}
 function refresh(){journal=J.read(storage);return journal.ok;}
 function go(next,replace=false){route=next;history[replace?'replaceState':'pushState'](null,'','#'+next);render();}
 function options(map,selected){return Object.entries(map).map(([k,v])=>`<option value="${esc(k)}" ${k===selected?'selected':''}>${esc(v)}</option>`).join('');}
@@ -63,7 +63,7 @@ function scriptureRows(){const items=S.filter(verseFilter.query,verseFilter.topi
 function downloadPage(id){refresh();const d=journal.entries.find(x=>x.id===id);if(!d)return heading('Prayer not available here.','The download page reads this browser’s journal on this exact website address. It is not a public sharing link.')+btn('journal','Return to journal');return `<section class="reading-page download-tools">${heading('Your prayer is ready to download.','Your journal copy is saved in this browser. Download HTML creates a separate reading file.')}<div class="actions">${btn('download-html','Download HTML','primary',`data-id="${d.id}"`)}${btn('print','Print')}${btn('open-entry','Read saved entry','quiet',`data-id="${d.id}"`)}</div><p class="meta">${esc(X.filename(d))}<br>Your browser chooses the download location. The file is private; share deliberately.</p></section>`+X.article(d,'h2',B);}
 function render(){document.getElementById('notice').hidden=true;const normalized=route==='home'?'pray':route;
 main.innerHTML=normalized==='journal'?editor('journal'):normalized==='journal/browse'?browse():normalized==='scripture'?scripture():normalized.startsWith('entry-')?entry(normalized.slice(6)):normalized.startsWith('download-')?downloadPage(normalized.slice(9)):editor('pray');
-document.querySelectorAll('[data-route]').forEach(a=>{const match=a.dataset.route==='journal'?(normalized.startsWith('journal')||normalized.startsWith('entry-')):a.dataset.route===normalized;a.toggleAttribute('aria-current',match);if(match)a.setAttribute('aria-current','page');});document.title=(normalized.startsWith('journal')?'Journal':normalized==='scripture'?'Scripture':normalized.startsWith('download-')?'Download':'Pray')+' · Wholehearted';const h=main.querySelector('h1');h?.focus({preventScroll:true});window.scrollTo(0,0);
+document.querySelectorAll('[data-route]').forEach(a=>{const match=a.dataset.route==='journal'?(normalized.startsWith('journal')||normalized.startsWith('entry-')):a.dataset.route===normalized;a.toggleAttribute('aria-current',match);if(match)a.setAttribute('aria-current','page');});document.title=(normalized.startsWith('journal')?'Journal':normalized==='scripture'?'Scripture':normalized.startsWith('download-')?'Download':'Pray')+' · Wholehearted';const h=main.querySelector('h1');h?.focus({preventScroll:true});window.scrollTo(0,0);window.WholeheartedExperience.refresh();
 }
 function snapshot(){return {title:document.getElementById('reader-heading').textContent,html:rc.innerHTML,scroll:rc.scrollTop,kind:panelKind,id:panelId};}
 function panel(title,html,push=false,kind='content',id=''){
@@ -157,6 +157,7 @@ window.addEventListener('popstate',()=>{route=location.hash.slice(1)||'pray';ren
 window.addEventListener('beforeunload',e=>{if(Object.keys(dirty).some(k=>dirty[k]&&J.meaningful(drafts[k]))){e.preventDefault();e.returnValue='';}});
 window.addEventListener('storage',e=>{if([J.STORAGE,C.STORAGE].includes(e.key))notify('The journal changed in another tab. Download unsaved work, then reload before saving.');});
 document.querySelectorAll('[data-build]').forEach(e=>e.textContent='Build '+B.version);
+window.WholeheartedExperience.init({panel:(title,html)=>panel(title,html,false,'contents'),closeReader});
 window.WholeheartedJourneyUI.init({draft:()=>drafts.pray,dirty:()=>{dirty.pray=true;},render,notify,panel});
 route=location.hash.slice(1)||'pray';if(['learn','about','privacy'].includes(route)){const initial=route;route='pray';render();panel(initial==='learn'?'Learn W.H.E.M.S. Prayer':initial==='about'?'About Wholehearted':'Privacy & sources',initial==='learn'?learn():initial==='about'?A.content():privacy());}else render();
 })();
