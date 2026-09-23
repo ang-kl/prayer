@@ -5,8 +5,9 @@ const S=typeof module==='object'&&module.exports?require('./catalogue.js'):root.
 const text=(x,n=3000)=>typeof x==='string'?x.slice(0,n):'';
 const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const keys=['W','H','E','M','S'];
+const P=typeof module==='object'&&module.exports?require('./prayer-output.js'):root.WholeheartedPrayerOutput;
 function state(raw){const x=object(raw)?raw:{};if(Array.isArray(x.turns)&&x.turns.length>12)throw Error('This entry has reached its guidance-history limit. Its saved data has not been replaced.');return {issue:text(x.issue,4000),context:text(x.context,4000),replies:Object.fromEntries(keys.map(k=>[k,text(x.replies?.[k],2000)])),voice:x.voice==='community'?'community':'personal',summaryConfirmed:x.summaryConfirmed===true,summary:text(x.summary,2500),result:object(x.result)?validateGuide(x.result):null,turns:Array.isArray(x.turns)?x.turns.slice(-12).map(t=>({at:text(t.at,40),summary:text(t.summary,2000),replies:Object.fromEntries(keys.map(k=>[k,text(t.replies?.[k],2000)])),questions:Object.fromEntries(keys.map(k=>[k,text(t.questions?.[k],2000)]))})):[],generatedAt:text(x.generatedAt,40),model:text(x.model,100)};}
-function forms(raw){const x=object(raw)?raw:{};return {sentence:text(x.sentence,6000),whems:text(x.whems,16000),extended:text(x.extended,24000),origin:text(x.origin,100),at:text(x.at,40)};}
+function forms(raw){const x=object(raw)?raw:{};return {sentence:text(x.sentence,6000),whems:text(x.whems,16000),extended:text(x.extended,24000),origin:text(x.origin,100),at:text(x.at,40),details:P.acceptedMetadata(x.details)};}
 function strings(x,max=8){if(!Array.isArray(x)||x.length>max||x.some(t=>typeof t!=='string'||t.length>2000))throw Error('The guidance response was not complete. Please retry.');return x;}
 function refs(x){const a=strings(x,8);if(a.some(id=>!S.get(id)))throw Error('A Scripture reference could not be verified.');return [...new Set(a)];}
 function validateGuide(x){if(!object(x)||typeof x.summary!=='string'||x.summary.length>2500||!Array.isArray(x.areas)||x.areas.length!==5)throw Error('The guidance response was incomplete.');
@@ -14,10 +15,7 @@ function validateGuide(x){if(!object(x)||typeof x.summary!=='string'||x.summary.
  if(!Array.isArray(x.options)||x.options.length>4)throw Error('Decision options could not be verified.');
  return {summary:x.summary,statedFacts:strings(x.statedFacts),uncertainties:strings(x.uncertainties),clarification:text(x.clarification,2000),areas:keys.map(k=>areas.find(a=>a.key===k)),options:x.options.map(o=>{if(!object(o)||!['action','reason','caution'].every(k=>typeof o[k]==='string'&&o[k].length<2000))throw Error('Decision options could not be verified.');return {action:o.action,reason:o.reason,caution:o.caution,referenceIds:refs(o.referenceIds)};}),safetyNote:text(x.safetyNote,1800)};
 }
-function validatePrayers(x){if(!object(x)||!['sentence','whems','extended'].every(k=>typeof x[k]==='string'&&x[k].trim()&&x[k].length<24000))throw Error('All three prayer forms were not returned. Your earlier wording has been kept.');
- if(!keys.every(k=>new RegExp('(?:^|\\n)'+k+'\\s*[-–:.]').test(x.whems)))throw Error('The W.H.E.M.S. prayer did not include all five labelled areas.');
- if(x.extended.trim().split(/\s+/).length<300)throw Error('The extended prayer was incomplete. Please retry or use the local drafts.');
- return forms({...x,origin:'AI-assisted draft',at:new Date().toISOString()});}
+function validatePrayers(x){const report=P.inspect(x);if(!report.complete){const error=Error(Object.values(report.statuses).filter(s=>s.state!=='ready').map(s=>s.message).join(' '));error.code='PRAYER_FORMAT';error.fields=report.statuses;throw error;}return forms({...report.values,origin:'AI-assisted draft',at:new Date().toISOString()});}
 function payload(d,action){const g=state(d.journey);return {action,consent:true,issue:g.issue,context:g.context,summary:g.summaryConfirmed?g.summary:'',replies:g.replies,questions:Object.fromEntries(keys.map(k=>[k,g.result?.areas.find(a=>a.key===k)?.question||''])),voice:g.voice,belonging:d.belonging||'',entryType:d.entryType,areas:Object.fromEntries(keys.map(k=>{const a=d.areas[k];return [k,{thank:a.thank,ask:a.ask,thankNote:a.thank?a.thankNote:'',askNote:a.ask?a.askNote:''}];})),nextStep:d.nextStep||'',fruit:d.fruit||[]};}
 function local(d){const g=state(d.journey),we=g.voice==='community',our=we?'our':'my',us=we?'us':'me',I=we?'we':'I';
 const issue=g.issue.trim()||d.context.trim()||d.topic.trim()||'this matter';

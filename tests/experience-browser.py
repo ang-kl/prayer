@@ -75,7 +75,7 @@ try:
       Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:k=>Object.hasOwn(data,k)?data[k]:null,setItem:(k,v)=>{if(window.failStorage)throw Error('quota');window.testWrites++;data[k]=String(v);},snapshot:()=>({...data})}});
       window.open=()=>null;
       }""")
-      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
+      files=['experience.js','build-info.js','theme.js','core.js','catalogue.js','teaching.js','prayer-output.js','guidance-core.js','journal.js','journey-ui.js','export.js','about.js','app.js']
       for name in files:page.add_script_tag(content=(ROOT/'public'/name).read_text())
       page.expose_function('fixture_response',response)
       page.evaluate("""()=>{window.fetch=async(url,opts)=>{
@@ -163,7 +163,7 @@ try:
       before=page.locator('[data-field="areas.W.askNote"]').input_value()
       page.locator('[data-fab=contents]').click();assert page.locator('#reader').is_visible()
       page.wait_for_function("document.getElementById('page-tools').hidden")
-      assert page.locator('.page-contents button').count()==16
+      assert page.locator('.page-contents button').count()==19
       page.screenshot(path=str(OUT/'contents-mobile.png'))
       page.locator('.page-contents [data-locate="#guide-save"]').click();settled()
       assert not page.locator('#reader').is_visible();focus_is('#guide-save')
@@ -176,6 +176,36 @@ try:
       page.locator('[data-fab=down]').click();settled();after=page.evaluate('scrollY');assert after>before+100
       page.locator('[data-fab=up]').click();settled();assert page.evaluate('scrollY')<after-100
     check('Up and Down move one visible screen and respect reduced-motion preference',arrows)
+    def obsolete_focus_timer():
+      # Hold focus-scroll timers so an old button callback runs AFTER focus has
+      # moved to the required acknowledgement. This reproduces the WebKit race
+      # deterministically rather than relying on a fixed delay or rerunning CI.
+      before=count_calls()
+      page.evaluate("""()=>{
+        document.activeElement.blur();
+        window.originalFocusSetTimeout=window.setTimeout;
+        window.heldFocusTimers=[];
+        window.setTimeout=(fn,ms,...args)=>ms===120 ?
+          (heldFocusTimers.push(()=>fn(...args)),0) : originalFocusSetTimeout(fn,ms,...args);
+        const origin=document.querySelector('#guide-prayers-ai');
+        origin.focus({preventScroll:true});
+        WholeheartedExperience.requireActions([
+          {selector:'#guidance-confirm',check:'checked',label:'Review the understanding',
+           message:'Please confirm the understanding before preparing your prayers.'}
+        ],origin,'preparing your prayers');
+      }""")
+      try:
+        focus_is('#guidance-confirm');settled()
+        assert 0<=page.locator('#guidance-confirm').bounding_box()['y']<page.viewport_size['height']-60
+        page.evaluate('heldFocusTimers.shift()()')
+        settled()
+        focus_is('#guidance-confirm')
+        r=page.locator('#guidance-confirm').bounding_box()
+        assert 0<=r['y']<page.viewport_size['height']-60,r
+        assert count_calls()==before
+      finally:
+        page.evaluate('window.setTimeout=originalFocusSetTimeout;heldFocusTimers=[];')
+    check('An obsolete button-focus callback cannot scroll away from the required acknowledgement',obsolete_focus_timer)
     def orientations():
       for w,h in [(320,640),(390,844),(430,932),(768,1024),(820,1180),(834,1194),(1024,1366),(1366,1024),(932,430),(844,390)]:
         page.set_viewport_size({'width':w,'height':h});settled()

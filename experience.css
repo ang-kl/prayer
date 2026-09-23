@@ -90,3 +90,9 @@ html[data-keyboard=true] #notice{max-height:110px}
 html[data-compact-controls=true] .page-tools{justify-content:flex-end}
 html[data-compact-controls=true] .page-tools button{flex:0 1 auto}
 .site-footer{padding-bottom:max(112px,calc(var(--tools-height,64px) + 32px))}
+
+/* Stable prayer outputs, source-grounded introduction and local suggestions. */
+.pattern-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}.pattern-pair .prayer{padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.pattern-pair .prayer p{margin:0 0 14px}.pattern-pair .prayer p:last-child{margin-bottom:0}.pattern-pair .prayer p:first-child{font-size:var(--body);padding-bottom:12px;border-bottom:1px solid var(--line)}
+.teaching-intro,.teaching-guardrails,.teaching-summary{margin-bottom:24px}.teaching-guardrails li{margin:0 0 14px}.teaching-summary-text{line-height:1.65}.suggested-opening{padding:12px 14px;border-left:3px solid var(--action);background:var(--surface);font-size:var(--meta);line-height:1.6}.suggested-opening span{display:block;margin-top:8px}
+.prayer-flow-status,.prayer-form-feedback{border:2px solid var(--line);border-radius:12px;padding:16px;margin:16px 0;background:var(--surface);overflow-wrap:anywhere}.prayer-flow-status[hidden]{display:none}.prayer-flow-status[data-kind=error]{border-color:var(--ink)}.prayer-form-feedback{font-size:var(--meta)}.prayer-form-feedback p:last-child{margin-bottom:0}.final-prayers textarea{scrollbar-gutter:stable;overflow-anchor:none}.pre{white-space:pre-wrap}.prayer-form-block{scroll-margin-block:20px}.prayer-form-block .actions{flex-wrap:wrap}
+@media(max-width:720px){.pattern-pair{grid-template-columns:minmax(0,1fr)}.pattern-pair .prayer{padding:16px}.prayer-form-feedback,.prayer-flow-status{padding:12px}}

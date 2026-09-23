@@ -79,7 +79,7 @@
     if(!notice)return;
     notice.replaceChildren();notice.hidden=!text;if(!text)return;
     notice.dataset.kind=kind;
-    const heading=doc.createElement('strong');heading.className='notice-title';heading.textContent=kind==='error'?'Something needs attention':'Wholehearted';
+    const heading=doc.createElement('strong');heading.className='notice-title';heading.textContent=kind==='error'?'Something needs attention':'Status update';
     const p=doc.createElement('p');p.textContent=text;
     const close=doc.createElement('button');close.type='button';close.className='notice-dismiss';close.textContent='Dismiss';close.setAttribute('aria-label','Dismiss status message');close.addEventListener('click',()=>{notice.hidden=true;});
     notice.append(heading,p,close);
@@ -111,6 +111,7 @@
       else{target.setAttribute('aria-invalid','true');group.classList.add('needs-attention');}
       note.classList.toggle('resolved',ready);
       note.innerHTML=`<strong>${ready?'This step is complete.':'Your action is needed.'}</strong><p>${escape(ready?'Your choice has been recorded. No AI request has been sent automatically.':error.message)}</p>`+
+        (!ready&&error.suggestion?'<p class="suggested-opening"><strong>Suggested starting wording:</strong> '+escape(error.suggestion)+'</p>':'')+
         (ready&&remaining.length?`<button type="button" data-locate="${escape(remaining[0].selector)}">Next: ${escape(remaining[0].label)}</button>`:returnMarkup());
     }
     const summary=pending.summary;
@@ -168,7 +169,13 @@
       if(e.target.closest('[data-return-origin]')){reveal(pending?.origin?.isConnected?pending.origin:lastReturn?.isConnected?lastReturn:'#guide-prayers');}
     });
     for(const type of ['input','change'])doc.addEventListener(type,()=>{requestAnimationFrame(updateErrors);});
-    doc.addEventListener('focusin',e=>{schedule();setTimeout(()=>avoidOverlap(e.target),120);});
+    doc.addEventListener('focusin',e=>{
+      schedule();
+      // A validation jump can move focus before a keyboard-settling timer fires.
+      // Never scroll back to the old button after revealing the required field.
+      const target=e.target;
+      setTimeout(()=>{if(doc.activeElement===target)avoidOverlap(target);},120);
+    });
     doc.addEventListener('focusout',schedule);
     root.addEventListener('scroll',schedule,{passive:true});root.addEventListener('resize',schedule,{passive:true});
     root.visualViewport?.addEventListener('resize',schedule,{passive:true});root.visualViewport?.addEventListener('scroll',schedule,{passive:true});
