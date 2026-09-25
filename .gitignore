@@ -3,3 +3,8 @@ node_modules/
 .vercel/
 __pycache__/
 .env*
+
+# flow-kit runtime state
+.claude/flow/.cache.json
+.claude/flow/approvals/
+.claude/flow/backups/
