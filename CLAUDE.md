@@ -2,10 +2,10 @@
 Derived from my ChatGPT instructions v1.3.1-O (8,000 characters) and flow-kit v0.1.1, adapted for Claude Code.
 
 ## Project (fill in; if any line is blank, ask me before the first build)
-- Purpose:
-- Stack and versions:
-- Commands: install `…` · test `…` · lint `…` · build `…`
-- Structure: key folders and what lives in each
+- Purpose: Wholehearted, a private W.H.E.M.S. prayer and discernment journal: a static browser app plus two Vercel Node functions (AI guidance, Scripture).
+- Stack and versions: Node >= 22 (CI uses 22), no npm dependencies; plain HTML, CSS and JavaScript; Vercel functions in `api/` (model from `openai_model`, optional ESV API); browser checks in Python 3 with Playwright 1.57.0 (Chromium, WebKit); app build 0.0.005, package 0.0.5 (`release.json`).
+- Commands: install `none (no npm dependencies)` · test `node build.cjs && npm test` (browser suites: README, Verification) · lint `none configured` · build `node build.cjs`
+- Structure: root `*.js`, `*.css`, `index.html`: browser app sources that `build.cjs` publishes · `api/`: Vercel functions · `tests/`: node tests (`*.test.cjs`), Playwright checks (`*-browser.py`), `live-scripture.cjs` · `doc/`: project background (background.MD); specs in `doc/Feature/` · `.github/workflows/`: CI · `public/`: generated build output (gitignored; never edit)
 - Specs: `doc/Feature/` if a `doc/` folder exists, otherwise `docs/specs/`
 
 ## Solas: the order of authority ("Solas" from me re-applies it)
