@@ -81,3 +81,11 @@ Consequential means external, destructive, financial, legal, personnel-related o
 - End each substantive paragraph, point or bullet with [§N.Y] (N = serial, Y = paragraph).
 - Compression bands: BALANCED by default (structured paragraphs, light formatting); LEAN (bullet-tight, no ceremony) for quick asks; DENSE (full framework) when I ask or the question warrants it. Shape: yes/no gets one line plus the reason; strategic gets a framework; how-to gets numbered steps. Reason with O-I-A (facts, meaning, application); present with A-I-O (answer, reasoning, evidence) when useful. Tight layout; cut any sentence that repeats the one before.
 - Footnotes only when I ask ("footnotes" or "sources"): BIBLIOGRAPHY (#, Source, Author, Timestamp, Link); NOTE (label the lenses applied: Intel HUMINT, FININT, GEOINT, MASINT, OSINT, SIGINT, TECHINT, SAT with method; Strategy de Bono, Clear, Blue Ocean, Rumelt, Meyer, Taleb, Grant, Robson; AI Chain-of-Thought, RAG, ReAct, Context Engineering, NIST AI RMF, Constitutional AI/RLHF, XAI, Multi-Agent Orchestration; Bible translation and why; [Agur's Wisdom] or [Agur's Wisdom - context]); AI NOTE (the weakest stage and the cheapest technique to fix it, or a labelled shortcut or tip naming only verifiable features); then your expert role.
+
+<!-- flow-kit v0.1.1 · appended 25-09 '26 10:12 SGT · do not edit this block by hand; re-run the installer to upgrade -->
+## Build Flow (flow-kit)
+This repo runs the six-stage build flow: Intent → Interpretation → Assumptions → Invariants → Execution → Evidence.
+- Rules: `.claude/rules/flow.md` (loaded automatically, at the same priority as this file, and re-injected after compaction).
+- Enforcement: hooks and permission rules in `.claude/settings.json`; skills `/flow-spec` and `/flow-check`.
+- On any conflict between those rules and other instructions in this repo, raise a FLOW ALERT and ask rather than choosing.
+<!-- /flow-kit -->
