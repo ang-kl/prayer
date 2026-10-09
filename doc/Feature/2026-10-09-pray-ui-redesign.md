@@ -193,3 +193,8 @@ Acceptance criteria added:
 - [ ] The existing suites pass unchanged: 163 node tests, simple-path-browser.py 29/29, the three existing browser suites; preview-check.yml also runs the new file on manual dispatch (A16)
 
 Scope addition for this amendment: `tests/scroll-stability-browser.py` (new). The scope list above already covers experience.js, experience.css, styles.css and preview-check.yml.
+
+### Amendment 2a · 09-10 '26 14:36 SGT · the bottom rule
+Measured on the released build: at 390x844 the Save section's top sits 227px from the end of the page (320x568: 633px; 844x390: 357px), and tests/experience-browser.py:171 expects the floating button to be visible there. The owner chose to keep that test unchanged and to hide the button only at the very end. This corrects A25 and the fab_hidden_near_end criterion:
+- A25 (corrected): the button is hidden within two screens of the top (unchanged), within 48px of the end of the page (the page cannot scroll further), and while the page is being scrolled, returning within 100ms after the scroll stops. It stays available at the Save section.
+- fab_hidden_near_end (corrected): the bar is hidden when scrollY is within 48px of the end and at the very end; it is visible at the Save section (scrolled so that #guide-save sits at the top) and at three screens.
