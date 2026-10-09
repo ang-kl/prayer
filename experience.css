@@ -1,98 +1,190 @@
-/* Warm reading surfaces; all status information also has words, borders and native state. */
-html{--vp-height:100dvh;--vp-width:100vw;--vp-top:0px;--vp-left:0px;--vp-bottom:0px;--vp-right:0px;scroll-padding-block:24px 110px}
+/* Warm reading surfaces; all status information also has words, borders and native state.
+   The Pray page look: one reading column, calm cards, one main action per screen, a hairline
+   ornament in three places only (the brand cross, the issue card and the record card). */
+
+/* ---------- 1. Insets and viewport variables ---------- */
+:root{--inset-l:env(safe-area-inset-left,0px);--inset-r:env(safe-area-inset-right,0px);--inset-b:env(safe-area-inset-bottom,0px)}
+html{--vp-height:100dvh;--vp-width:100vw;--vp-top:0px;--vp-left:0px;--vp-bottom:0px;--vp-right:0px;scroll-padding-block:24px 72px}
 body{background:var(--paper)}
 .site-header{background:var(--paper)}
-input:not([type=radio]):not([type=checkbox]),textarea,select{border-color:var(--line)}
-textarea::placeholder,input::placeholder{color:var(--muted)}
-textarea{scroll-margin-block:32px 110px}
-main{padding-bottom:110px}
-.site-footer{padding-bottom:112px}
-.guided-workspace .writing-paper{border-radius:18px}
-.issue-paper{border-top:5px solid var(--action)}
-.consent-box{background:var(--lavender);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:24px}
-.consent-box h3{margin-top:0}
-.guided-workspace .open-area{background:var(--surface);border:1px solid var(--line);border-inline-start:6px solid var(--area-accent);padding:24px;scroll-margin-top:24px}
-.open-area[data-area=W],.area[data-area=W]{--area-tint:var(--lavender);--area-accent:#705380}
-.open-area[data-area=H],.area[data-area=H]{--area-tint:var(--blush);--area-accent:#925368}
-.open-area[data-area=E],.area[data-area=E]{--area-tint:var(--apricot);--area-accent:#946037}
-.open-area[data-area=M],.area[data-area=M]{--area-tint:var(--ice);--area-accent:#4c6d90}
-.open-area[data-area=S],.area[data-area=S]{--area-tint:var(--vanilla);--area-accent:#856915}
-.open-area h2{display:flex;align-items:center;gap:12px}
-.area-mark{width:44px;height:44px;border:1px solid var(--area-accent);border-radius:12px;display:inline-grid;place-items:center;background:var(--area-tint);font-family:var(--serif);flex:none}
-.open-area .context-focus{padding:16px 18px;background:var(--area-tint);border-left:3px solid var(--area-accent);border-radius:0 10px 10px 0}
-.guidance-source{display:inline-block;font-size:var(--meta);padding:6px 12px;border:1px solid var(--line);border-radius:30px;margin-bottom:12px;background:var(--lavender)}
-.reply-question{font-size:var(--body);margin-bottom:14px}
-.reply-field textarea{border:1.5px solid var(--area-accent);background:var(--surface);min-height:130px}
-.reply-support{font-size:var(--meta);font-weight:400;color:var(--muted);display:block;margin-top:8px}
-.reflection-columns>div{background:var(--area-tint);border:1px solid var(--line);border-radius:12px;padding:16px}
-.reflection-choice{margin:0;align-items:flex-start;min-height:48px}
+textarea{scroll-margin-block:32px 80px}
+/* The footer keeps fixed room for the floating bar (48px plus 24px), so nothing moves when the bar appears at the page end. */
+main{padding-bottom:calc(max(16px,var(--inset-b)) + 24px)}
+.site-footer{padding-bottom:calc(max(16px,var(--inset-b)) + 72px)}
+
+/* ---------- 2. The Pray page: heading, teaching intro and the issue card ---------- */
+.guided-workspace .page-heading{display:block;margin:0 0 6px}
+.guided-workspace h1{margin:0}
+.guided-workspace .writing-paper{padding:8px 14px 10px;margin:6px 0;border-radius:12px}
+.guided-workspace .teaching-intro{padding:6px 14px}
+.guided-workspace .teaching-intro h2{font:400 var(--question)/1.3 var(--serif);margin:0 0 4px}
+.example-prayers{border:0;margin:0;padding:0}
+.example-prayers>summary{font-size:var(--meta);padding:12px 2px}
+.example-prayers[open]>summary{margin-bottom:8px}
+.issue-paper{border-top:2px solid var(--gilt)}
+.issue-question{font:400 var(--question)/1.3 var(--serif);margin:0 0 4px}
+.issue-main .field{margin:4px 0 0}
+.issue-main textarea{margin-top:4px}
+.save-promise{margin:2px 0 4px;line-height:1.35}
+.issue-grid{display:grid;gap:0}
+.path-choice{display:grid;gap:4px;align-content:start}
+.path-choice p{margin:0}
+#quick-pray{min-height:56px;width:100%;font-size:var(--body)}
+.path-choice .secondary{width:100%}
+.help-elsewhere{border:0;margin:6px 0 0;padding:0}
+.help-elsewhere>summary{font-size:var(--meta);padding:12px 2px}
+.help-elsewhere ul{margin:0 0 8px}
+.help-elsewhere li{margin:0 0 6px}
+.issue-paper>.field{margin-top:8px}
+.consent-box{background:var(--ice);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:10px}
+.consent-box h3{margin:0 0 8px}
+.consent-box p{margin:0 0 8px}
+.consent-box .check{font-size:var(--body);font-weight:600}
+.consent-box .actions{margin:8px 0}
+
+/* ---------- 3. The five areas ---------- */
+.areas-intro{margin:24px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+.areas-intro h2{margin:0 0 6px}
+.areas-intro p{margin:0 0 10px}
+.whems-jumps a span{font:400 1.1em/1 var(--serif)}
+.guided-workspace .open-area{background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--area-accent);padding:12px 14px 10px;scroll-margin-top:24px}
+.open-area[data-area=W],.area[data-area=W]{--area-tint:var(--lavender);--area-accent:var(--area-w)}
+.open-area[data-area=H],.area[data-area=H]{--area-tint:var(--blush);--area-accent:var(--area-h)}
+.open-area[data-area=E],.area[data-area=E]{--area-tint:var(--apricot);--area-accent:var(--area-e)}
+.open-area[data-area=M],.area[data-area=M]{--area-tint:var(--ice);--area-accent:var(--area-m)}
+.open-area[data-area=S],.area[data-area=S]{--area-tint:var(--vanilla);--area-accent:var(--area-s)}
+.open-area h2{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.area-mark{width:2em;height:2em;border:1px solid var(--area-accent);border-radius:10px;display:inline-grid;place-items:center;background:var(--area-tint);color:var(--area-accent);font:400 .85em/1 var(--serif);flex:none}
+.open-area .context-focus{padding:10px 12px;background:var(--area-tint);border-left:3px solid var(--area-accent);border-radius:0 8px 8px 0;margin:0 0 10px}
+.guidance-source{display:inline-block;font-size:var(--meta);padding:4px 12px;border:1px solid var(--line);border-radius:24px;margin:0 0 8px;background:var(--ice)}
+.reply-question{font:400 var(--question)/1.3 var(--serif);margin:0 0 6px}
+.reply-field{margin:0}
+.reply-field textarea{border:1.5px solid var(--area-accent);background:var(--surface);min-height:5.75em;field-sizing:content;max-height:50dvh}
+.question-help{border:0;margin:4px 0 0;padding:0}
+.question-help>summary{font-size:var(--meta);padding:12px 2px}
+.question-help p{margin:0 0 10px}
+.reflection-columns{margin-top:6px}
+.reflection-columns>div{border-top:1px solid var(--line);padding:2px 0}
+.reflection-choice{margin:0;align-items:flex-start;min-height:48px;padding:8px 0}
 .reflection-choice strong,.reflection-choice small{display:block;font-size:var(--meta)}
-.reflection-choice small{font-weight:400;color:var(--muted);line-height:1.5;margin-top:6px}
-.reflection-choice input{margin-top:4px;accent-color:var(--action);flex-shrink:0}
+.reflection-choice small{font-weight:400;color:var(--muted);margin-top:2px}
+.reflection-choice input{margin-top:.15em;flex-shrink:0}
 .reflection-columns .field{margin-bottom:0}
-.interpretation{background:var(--ice);border:1px solid var(--line);border-left:6px solid #4c6d90}
-.decision-paper{border-top:5px solid #856915}
-.final-prayers{border-top:5px solid #705380}
-.record-paper{border-top:5px solid #946037}
-.prayer-form-block[data-prayer-kind=sentence]{border-left:4px solid #856915}
-.prayer-form-block[data-prayer-kind=whems]{border-left:4px solid #705380}
-.prayer-form-block[data-prayer-kind=extended]{border-left:4px solid #4c6d90}
-.prayer-form-block{padding:20px 0 20px 18px;margin:16px 0}
-.prayer-form-block textarea{max-height:min(36rem,65dvh);min-height:140px}
-.prayer-form-block textarea[data-prayer-form=sentence]{min-height:105px}
+.open-area .reading-links{margin-top:6px}
+.area-next{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.area-next p{margin:0 0 4px}
+.area-next .actions{margin:0}
+.interpretation{background:var(--ice);border:1px solid var(--line);border-left:4px solid var(--area-m);border-radius:10px;padding:12px 14px;margin:12px 0}
+.interpretation h2{margin-bottom:6px}
+
+/* ---------- 4. Decision, teaching pages, prayers and the record ---------- */
+#guide-options .decision-option{margin:12px 0}
+.guided-workspace .teaching-guardrails,.guided-workspace .teaching-summary{background:transparent;border:0;border-left:3px solid var(--line);border-radius:0;padding:4px 0 4px 16px;margin:16px 0}
+.teaching-guardrails li{margin:0 0 10px}
+.teaching-summary-text{line-height:inherit}
+.final-prayers .principle{font-weight:600;margin:12px 0;padding-left:12px;border-left:3px solid var(--line)}
+.final-prayers textarea{font:400 var(--body)/1.7 var(--serif);field-sizing:content;max-height:min(36rem,65dvh);scrollbar-gutter:stable;overflow-anchor:none}
+.prayer-form-block{border-top:1px solid var(--line);border-left:4px solid var(--line);padding:14px 0 12px 14px;margin:14px 0;scroll-margin-block:20px}
+.prayer-form-block[data-prayer-kind=sentence]{border-left-color:var(--area-s)}
+.prayer-form-block[data-prayer-kind=whems]{border-left-color:var(--area-w)}
+.prayer-form-block[data-prayer-kind=extended]{border-left-color:var(--area-m)}
+.prayer-form-block h3{margin:0 0 8px;font:400 var(--question)/1.3 var(--serif)}
+.prayer-form-block textarea[data-prayer-form=sentence]{min-height:5.5em}
+.prayer-form-block .actions{flex-wrap:wrap}
+.prayer-flow-status,.prayer-form-feedback{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;background:var(--paper);overflow-wrap:anywhere;font-size:var(--meta)}
+.prayer-flow-status[hidden]{display:none}
+.prayer-flow-status[data-kind=error]{border:2px solid var(--ink)}
+.prayer-flow-status p,.prayer-form-feedback p{margin:6px 0 10px}
+.prayer-form-feedback p:last-child{margin-bottom:0}
+.record-paper{border-top:2px solid var(--gilt)}
+.pre{white-space:pre-wrap}
+.pattern-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
+.pattern-pair .prayer{padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.pattern-pair .prayer p{margin:0 0 10px}
+.pattern-pair .prayer p:last-child{margin-bottom:0}
+.pattern-pair .prayer p:first-child{font-size:var(--body);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.suggested-opening{padding:10px 12px;border-left:3px solid var(--line);background:var(--surface);font-size:var(--meta);line-height:1.4}
+.suggested-opening span{display:block;margin-top:6px}
+@media(max-width:720px){.pattern-pair{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- 5. Attention and validation (words, borders and native state) ---------- */
+.action-feedback,.field-action-note,.inline-status{background:var(--vanilla);border:2px solid var(--attention);border-radius:10px;padding:12px 14px;margin:12px 0;overflow-wrap:anywhere;font-size:var(--meta)}
+.action-feedback h3{margin:0 0 8px;font:600 var(--body)/1.3 var(--sans)}
+.action-feedback p,.field-action-note p{margin:6px 0 10px}
+.action-feedback ul{margin:0;padding-left:20px}
+.action-feedback li{margin:10px 0}
+.action-feedback li span{display:block;margin-top:4px}
+.action-feedback button,.field-action-note button{min-height:48px;text-align:left;background:var(--surface);border:1.5px solid var(--attention)}
+.needs-attention{outline:2px solid var(--attention);outline-offset:6px;border-radius:8px;background:var(--vanilla)}
+[aria-invalid=true]{border-color:var(--attention)!important}
+.field-action-note.resolved,.action-feedback.resolved{background:var(--ice);border-color:var(--area-m)}
+.field-action-note.resolved button{border-color:var(--area-m)}
 [data-guide-action=cancel]{border-style:dashed}
 [data-guide-action=cancel]:not([data-busy]){display:none}
-/* Inline errors persist until the related person-controlled choice is corrected. */
-.action-feedback,.field-action-note,.inline-status{background:var(--vanilla);border:2px solid #856915;border-radius:12px;padding:16px 18px;margin:18px 0;overflow-wrap:anywhere;font-size:var(--meta)}
-.action-feedback h3{margin:0 0 10px;font:600 var(--body)/1.4 var(--sans)}
-.action-feedback p,.field-action-note p{margin:8px 0 12px}
-.action-feedback ul{margin:0;padding-left:20px}
-.action-feedback li{margin:12px 0}
-.action-feedback li span{display:block;margin-top:6px}
-.action-feedback button,.field-action-note button{min-height:48px;text-align:left;background:var(--surface);border:1.5px solid #856915}
-.needs-attention{outline:2px solid #856915;outline-offset:8px;border-radius:6px;background:var(--vanilla)}
-[aria-invalid=true]{border-color:#856915!important}
-.field-action-note.resolved,.action-feedback.resolved{background:var(--ice);border-color:#4c6d90}
-.field-action-note.resolved button{border-color:#4c6d90}
-#notice{position:fixed;z-index:70;left:calc(var(--vp-left) + max(12px,env(safe-area-inset-left)));top:calc(var(--vp-top) + max(12px,env(safe-area-inset-top)));bottom:auto;width:min(32rem,calc(var(--vp-width) - 124px));max-height:min(240px,calc(var(--vp-height)*.32));overflow:auto;overscroll-behavior:contain;padding:16px 92px 16px 18px;margin:0;background:var(--surface);border:2px solid var(--action);box-shadow:0 10px 28px #241b3326;border-radius:14px;font-size:var(--meta);line-height:1.55}
-#notice p{margin:8px 0 0}
+
+/* ---------- 6. The status notice ---------- */
+#notice{position:fixed;z-index:70;left:calc(var(--vp-left) + max(12px,var(--inset-l)));top:calc(var(--vp-top) + max(12px,env(safe-area-inset-top)));bottom:auto;width:min(32rem,calc(var(--vp-width) - 124px));max-height:min(240px,calc(var(--vp-height)*.32));overflow:auto;overscroll-behavior:contain;padding:14px 104px 14px 16px;margin:0;background:var(--surface);border:2px solid var(--action);box-shadow:0 10px 28px #241b3326;border-radius:14px;font-size:var(--meta);line-height:1.4}
+#notice p{margin:6px 0 0}
 #notice .notice-title{display:block;color:var(--action)}
-#notice .notice-dismiss{position:absolute;top:8px;right:8px;min-height:44px;padding:8px;font-size:.875rem}
-#notice .actions{margin-top:12px}
+#notice .notice-dismiss{position:absolute;top:8px;right:8px;min-height:48px;min-width:48px;padding:8px 10px;font-size:var(--meta)}
+#notice .actions{margin-top:10px}
 .reader-open #notice{display:none}
-/* Floating controls do not carry prayer content. They hide behind a modal reader. */
-.page-tools{position:fixed;right:calc(var(--vp-right) + max(16px,env(safe-area-inset-right)));bottom:calc(var(--vp-bottom) + max(16px,env(safe-area-inset-bottom)));z-index:60;display:flex;flex-direction:column;gap:8px;filter:drop-shadow(0 5px 9px #241b3326)}
-.page-tools button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:94px;min-height:48px;border:1.5px solid var(--action);background:var(--surface);border-radius:16px;font-size:var(--meta);padding:10px 12px;line-height:1.3}
+html[data-compact-controls=true] #notice{top:calc(var(--vp-top) + max(10px,env(safe-area-inset-top)));bottom:auto;width:calc(var(--vp-width) - max(12px,var(--inset-l)) - max(12px,var(--inset-r)));max-height:min(220px,calc(var(--vp-height)*.3))}
+html[data-keyboard=true] #notice{max-height:110px}
+
+/* ---------- 7. The floating bar: a surface pill, never a primary control ---------- */
+.page-tools{position:fixed;z-index:60;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;right:calc(var(--vp-right) + max(16px,var(--inset-r)));bottom:calc(var(--vp-bottom) + max(16px,var(--inset-b)));max-width:calc(var(--vp-width) - max(16px,var(--inset-l)) - max(16px,var(--inset-r)))}
+.page-tools button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:48px;min-height:48px;padding:10px 14px;border:1.5px solid var(--action);border-radius:24px;background:var(--surface);color:var(--ink);font-size:var(--meta);line-height:1.2;box-shadow:0 4px 12px #241b3326}
 .page-tools button span[aria-hidden]{font-size:1.25rem}
-.page-tools [data-fab=contents]{background:var(--action);color:var(--surface)}
-.page-tools [data-fab=up]{background:var(--vanilla)}
-.page-tools [data-fab=down]{background:var(--apricot)}
 .page-tools button:disabled{opacity:1;color:var(--muted);border-style:dashed;border-color:var(--line);cursor:default}
+html[data-compact-controls=false] .page-tools{flex-direction:column}
+/* A18: on compact layouts the bar waits until the reader is two screens down (experience.js sets data-far),
+   it leaves while the keyboard is open, and phones narrower than 700px keep one Contents button. */
+html[data-compact-controls=true] .page-tools:not([data-far=true]){display:none}
+html[data-keyboard=true] .page-tools{display:none}
+@media(max-width:699px){.page-tools [data-fab=up],.page-tools [data-fab=down]{display:none}}
 .page-contents{display:grid;gap:8px}
 .page-contents button{display:flex;justify-content:space-between;gap:12px;text-align:left;border:1px solid var(--line);border-left:4px solid var(--action);background:var(--surface);font-size:var(--body);min-height:52px}
-.page-contents [aria-current=location]{background:var(--lavender);border-width:2px 2px 2px 5px}
+.page-contents [aria-current=location]{background:var(--sage);border-width:2px 2px 2px 5px}
 .page-contents button span{font-size:var(--meta);font-weight:400}
-html[data-compact-controls=true] .page-tools{flex-direction:row;gap:6px}
-html[data-compact-controls=true] .page-tools button{min-width:52px;padding:10px}
-html[data-compact-controls=true] #notice{top:calc(var(--vp-top) + max(10px,env(safe-area-inset-top)));bottom:auto;width:calc(var(--vp-width) - 24px);max-height:min(220px,calc(var(--vp-height)*.3))}
-html[data-keyboard=true] .page-tools [data-fab=up],html[data-keyboard=true] .page-tools [data-fab=down]{display:none}
-html[data-keyboard=true] #notice{max-height:110px}
-/* Layout reacts to window space and visual viewport, not unreliable model-name detection. */
 @media(min-width:1100px){main{padding-right:126px}.site-footer{padding-right:126px}}
-@media(max-width:700px){.guided-workspace .open-area{padding:18px 16px}.open-whems{gap:18px}.consent-box{padding:16px}.reflection-columns{gap:14px}.prayer-form-block{padding-left:12px}.page-tools button{border-radius:13px}.prayer-form-block textarea{max-height:55dvh}}
-@media(orientation:landscape) and (max-height:520px){.page-tools{flex-direction:row}.site-header{padding-block:10px}.reader-header{padding:8px 16px}.reader-content{padding:16px}.reader-header h2{font-size:1.25rem}#reader{height:calc(var(--vp-height) - 12px);max-height:calc(var(--vp-height) - 12px)}#notice{max-height:120px}}
-@media(max-width:359px){html[data-compact-controls=true] .page-tools{right:calc(var(--vp-right) + 10px)}.page-tools button{font-size:.875rem}#notice{padding-right:76px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.page-tools,.needs-attention{transition:none;animation:none}}
-@media(forced-colors:active){.needs-attention,[aria-invalid=true],.action-feedback,.field-action-note,#notice{border:2px solid CanvasText;outline-color:Highlight}.page-tools button{border:2px solid ButtonText}.page-contents [aria-current]{border-left:5px solid Highlight}}
-@media print{.page-tools,.action-feedback,.field-action-note,.consent-box{display:none!important}main,.site-footer{padding-right:0;padding-bottom:0}.open-area{border-left:2px solid black}.needs-attention{outline:none;background:none}}
-/* Keep enlarged navigation inside the visible width rather than reducing text size. */
-.page-tools{max-width:calc(var(--vp-width) - 32px);flex-wrap:wrap}
-html[data-compact-controls=true] .page-tools{justify-content:flex-end}
-html[data-compact-controls=true] .page-tools button{flex:0 1 auto}
-.site-footer{padding-bottom:max(112px,calc(var(--tools-height,64px) + 32px))}
 
-/* Stable prayer outputs, source-grounded introduction and local suggestions. */
-.pattern-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}.pattern-pair .prayer{padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.pattern-pair .prayer p{margin:0 0 14px}.pattern-pair .prayer p:last-child{margin-bottom:0}.pattern-pair .prayer p:first-child{font-size:var(--body);padding-bottom:12px;border-bottom:1px solid var(--line)}
-.teaching-intro,.teaching-guardrails,.teaching-summary{margin-bottom:24px}.teaching-guardrails li{margin:0 0 14px}.teaching-summary-text{line-height:1.65}.suggested-opening{padding:12px 14px;border-left:3px solid var(--action);background:var(--surface);font-size:var(--meta);line-height:1.6}.suggested-opening span{display:block;margin-top:8px}
-.prayer-flow-status,.prayer-form-feedback{border:2px solid var(--line);border-radius:12px;padding:16px;margin:16px 0;background:var(--surface);overflow-wrap:anywhere}.prayer-flow-status[hidden]{display:none}.prayer-flow-status[data-kind=error]{border-color:var(--ink)}.prayer-form-feedback{font-size:var(--meta)}.prayer-form-feedback p:last-child{margin-bottom:0}.final-prayers textarea{scrollbar-gutter:stable;overflow-anchor:none}.pre{white-space:pre-wrap}.prayer-form-block{scroll-margin-block:20px}.prayer-form-block .actions{flex-wrap:wrap}
-@media(max-width:720px){.pattern-pair{grid-template-columns:minmax(0,1fr)}.pattern-pair .prayer{padding:16px}.prayer-form-feedback,.prayer-flow-status{padding:12px}}
+/* ---------- 8. Wide screens: the issue card in two columns ---------- */
+@media(min-width:900px) and (min-height:521px){.issue-grid{grid-template-columns:7fr 5fr;gap:0 24px;align-items:start}.issue-main{display:contents}.issue-question{grid-column:1/-1}.issue-main .field{grid-column:1}.save-promise{grid-column:1}.path-choice{grid-column:2;grid-row:2/span 2;margin-top:4px}}
+
+/* ---------- 9. Phone landscape: one header row, two-column issue card, a right-hand rail ---------- */
+@media(orientation:landscape) and (max-height:520px){
+.site-header{padding-block:2px;gap:0 12px}
+.brand{flex:0 0 auto;min-height:40px}
+.brand small{display:none}
+main{padding-top:4px}
+.guided-workspace .page-heading{margin-bottom:2px}
+.guided-workspace h1{font-size:var(--question)}
+.guided-workspace .writing-paper{margin:6px 0;padding:6px 12px}
+.guided-workspace .teaching-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px;align-items:center;padding:0 2px;margin:4px 0;border:0;background:transparent}
+.guided-workspace .teaching-intro h2{font-size:var(--body);margin:0}
+.example-prayers>summary{padding:6px 2px}
+.example-prayers[open]{grid-column:1/-1}
+.issue-question{font-size:var(--body)}
+.issue-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0 16px;align-items:start}
+.issue-main{display:contents}
+.issue-question{grid-column:1/-1}
+.issue-main .field{grid-column:1}
+.save-promise{grid-column:1}
+.path-choice{grid-column:2;grid-row:2/span 2;margin-top:4px}
+#quick-pray{font-size:var(--meta);padding:8px 10px}
+.path-choice .secondary{padding:8px 10px}
+.reader-header{padding-top:6px;padding-bottom:6px}
+.reader-header h2{font-size:var(--body)}
+.reader-content{padding-top:12px}
+#reader{height:calc(var(--vp-height) - 12px);max-height:calc(var(--vp-height) - 12px)}
+#notice{max-height:120px}
+.page-tools{flex-direction:column;flex-wrap:nowrap;gap:6px;right:calc(var(--vp-right) + max(8px,var(--inset-r)))}
+.page-tools button{flex-direction:column;gap:0;width:104px;min-width:0;padding:6px 4px;line-height:1.2}
+main,.site-footer{padding-right:calc(120px + max(8px,var(--inset-r)))}
+}
+
+/* ---------- 10. Motion, forced colours and print ---------- */
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.page-tools,.needs-attention{transition:none;animation:none}}
+@media(forced-colors:active){.needs-attention,[aria-invalid=true],.action-feedback,.field-action-note,#notice{border:2px solid CanvasText;outline-color:Highlight}.page-tools button{border:2px solid ButtonText}.page-contents [aria-current]{border-left:5px solid Highlight}.site-header{border-bottom:1px solid CanvasText}.site-header nav a[aria-current]{border-bottom:3px solid Highlight}#reader [data-action=size][aria-pressed=true]{border:3px solid Highlight}}
+@media print{.page-tools,.action-feedback,.field-action-note,.consent-box{display:none!important}main,.site-footer{padding-right:0;padding-bottom:0}.open-area{border-left:2px solid black}.needs-attention{outline:none;background:none}}

@@ -8,7 +8,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -47,3 +47,16 @@ jobs:
           BROWSER_MODE: http
           TEST_BROWSER: webkit
         run: python tests/inplace-browser.py
+      - name: Pray screen phone checks (Chromium, AI fixture)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BROWSER_MODE: http
+          EVIDENCE_DIR: ${{ runner.temp }}/evidence
+        run: python tests/simple-path-browser.py
+      - name: Pray screen phone checks (Linux WebKit, not physical Safari)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BROWSER_MODE: http
+          TEST_BROWSER: webkit
+          EVIDENCE_DIR: ${{ runner.temp }}/evidence
+        run: python tests/simple-path-browser.py

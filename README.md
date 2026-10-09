@@ -1,4 +1,4 @@
-# Wholehearted - build 0.0.002
+# Wholehearted - build 0.0.005
 
 A W.H.E.M.S. prayer and discernment workspace. Describe a situation, reflect through
 Will, Heart, Emotions, Mind and Soul, consider a faithful next step, and keep three
@@ -7,14 +7,21 @@ applications, not messages from God or assessments of salvation.
 
 ## Runtime
 
-No npm dependencies. `node build.cjs` publishes 12 browser assets to `public/`.
+No npm dependencies. `node build.cjs` publishes 16 browser assets to `public/`.
 Vercel runs two small Node functions in `api/`. `release.json` is the display build
 source; package version and journal schema have independent purposes.
 
-`Pray` shows all five reflections open. AI proposes a summary and contextual questions;
-the writer can correct the summary and update answers. One sentence, W.H.E.M.S. and an
-extended original Puritan-influenced prayer are displayed together, independently editable.
-Local templates are also available without transmitting personal content.
+## Pray
+
+`Pray` starts with one box: write what is happening and what you are trying to decide.
+One tap on "Pray with what I have written" makes three prayers on the device, and nothing
+is sent anywhere. The five areas (Will, Heart, Emotions, Mind and Soul) are optional, one
+short question each, and any of them can be skipped. AI help runs only after the consent
+box is ticked; the AI summary and questions can be corrected before they are relied on.
+The three prayers (one sentence, W.H.E.M.S. and an extended prayer in an older devotional
+style) sit together and can be edited one by one. Saving is explicit and stays in the
+browser. The floating Contents button appears after two screens of reading and leaves
+while the keyboard is open; the text-size button (Aa) offers Standard, Larger and Largest.
 
 `Journal` starts with a fresh page. Browsing is deliberate and shows titles/metadata,
 not prayer excerpts. Local entries preserve revisions, linked follow-ups and three forms.
@@ -82,9 +89,18 @@ follow-up at the limit. Journal capacity remains 100 entries.
 
 ## Verification
 
-Run `node build.cjs` then `node --test tests/*.test.cjs`.
-`BROWSER_MODE=dom CHROMIUM_PATH=/usr/bin/chromium python tests/completion-browser.py`
-uses injected assets and storage/API fixtures when local navigation is prohibited.
+Run `node build.cjs` then `node --test tests/*.test.cjs` (163 tests, including
+`tests/simple-path.test.cjs` for the Pray screen contract: markup, copy, tokens and CSP hygiene).
+The browser suites need Playwright 1.57.0 with Chromium. Set `EVIDENCE_DIR` to a folder
+outside the repository, because every suite writes screenshots and logs there:
+`BROWSER_MODE=http EVIDENCE_DIR=/tmp/evidence python tests/completion-browser.py`, then the
+same for `tests/experience-browser.py`, `tests/inplace-browser.py` and
+`tests/simple-path-browser.py` (eleven phone sizes in both orientations, the floating bar,
+keyboard and safe-area fixtures, tap targets, text sizes and contrast rules for the Pray
+screen). `BROWSER_MODE=dom CHROMIUM_PATH=/usr/bin/chromium` injects the built assets and
+storage/API fixtures when local navigation is prohibited; it cannot check the CSP.
+`TEST_BROWSER=webkit` runs a suite in Linux WebKit, which is not physical Safari; the CI
+workflow runs the Pray screen checks in Chromium and WebKit on a manual dispatch only.
 The CI workflow uses real local HTTP and native Chromium storage, with **simulated AI**
 responses. `LIVE_ESV=1` also verifies the actual Crossway iframe; `tests/live-scripture.cjs`
 checks the exact verse IDs for every range. No paid OpenAI requests are made by CI.
