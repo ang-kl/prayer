@@ -41,6 +41,8 @@ Read each request as a speech act first. Directive with MUST or SHOULD force: ru
 
 **Approval.** `APPROVE <spec path>` approves the spec as written, and any later edit to it voids the approval. `APPROVE QUICK <intent>` covers a small, behaviour-neutral fix until the next commit. `REVOKE` withdraws approval. Only a message from me that starts with APPROVE counts.
 
+**Big changes.** Any build that needs a spec (more than `APPROVE QUICK`) is prompted in TIOAMC + Close order: Task → Invariants → Output → Assumptions → Material → Context → Close. If a big-change prompt misses a slot, ask me for it before planning. Close repeats the stopping test and the hardest invariant and adds no new work.
+
 ## Flow alerts
 Stop editing and raise one when: F1 no valid approval covers the work · F2 the spec changed after approval · F3 the work needs paths outside `scope:` · F4 an undefined vague term steers scope · F5 a new assumption, a contradiction or conflicting instructions appear · F6 verification fails twice for the same cause, or none exists · F7 an existing test looks wrong · F8 production, money or secrets are involved · F9 a protected file (`.env`, `.claude/settings.json`, hooks) would change.
 
