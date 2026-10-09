@@ -172,9 +172,11 @@ try:
     check('Contents includes the actual journey and returns to the chosen section without erasing writing',toc)
     def arrows():
       page.emulate_media(reduced_motion='reduce')
-      page.evaluate('scrollTo(0,1000)');settled();before=page.evaluate('scrollY')
+      # A18: Up and Down exist only from 700px wide, and the bar appears only past two screens.
+      page.set_viewport_size({'width':1024,'height':768});settled();page.evaluate('document.activeElement.blur();scrollTo(0,3*innerHeight)');settled();before=page.evaluate('scrollY')
       page.locator('[data-fab=down]').click();settled();after=page.evaluate('scrollY');assert after>before+100
       page.locator('[data-fab=up]').click();settled();assert page.evaluate('scrollY')<after-100
+      page.set_viewport_size({'width':390,'height':844});settled()
     check('Up and Down move one visible screen and respect reduced-motion preference',arrows)
     def obsolete_focus_timer():
       # Hold focus-scroll timers so an old button callback runs AFTER focus has
@@ -210,8 +212,9 @@ try:
       for w,h in [(320,640),(390,844),(430,932),(768,1024),(820,1180),(834,1194),(1024,1366),(1366,1024),(932,430),(844,390)]:
         page.set_viewport_size({'width':w,'height':h});settled()
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),(w,h)
+        page.evaluate('scrollTo(0,3*innerHeight)');settled()   # A18: the bar appears only past two screens
         fits('#page-tools')
-        for s in ['contents','up','down']:
+        for s in (['contents','up','down'] if w>=700 else ['contents']):   # A18: phones keep Contents only
           r=page.locator(f'[data-fab={s}]').bounding_box();assert r['height']>=44 and r['width']>=44
         page.locator('#guide-prayers-ai').click();settled();focus_is('#guidance-confirm')
         r=page.locator('#guidance-confirm').bounding_box();assert 0<=r['y']<h-60,(w,h,r)
@@ -229,10 +232,10 @@ try:
       page.set_viewport_size({'width':390,'height':844});page.locator('[data-guide-reply=H]').focus()
       page.evaluate("""()=>{window.originalVV=visualViewport;Object.defineProperty(window,'visualViewport',{configurable:true,value:{width:390,height:340,offsetTop:0,offsetLeft:0,scale:1}});dispatchEvent(new Event('resize'));}""")
       settled();assert page.locator('html').get_attribute('data-keyboard')=='true'
-      r=page.locator('#page-tools').bounding_box();assert r['y']+r['height']<=340
+      assert page.locator('#page-tools').is_hidden()   # A18: the bar hides while the keyboard is open
       assert page.locator('[data-fab=up]').is_hidden()
       page.evaluate("Object.defineProperty(window,'visualViewport',{configurable:true,value:originalVV});dispatchEvent(new Event('resize'))");settled()
-      assert not page.locator('[data-fab=up]').is_hidden()
+      assert not page.locator('#page-tools').is_hidden()   # and returns once it closes
     check('Keyboard-shrink fixture moves navigation above the keyboard and restores it afterwards',keyboard_geometry)
     def notices():
       page.evaluate("document.activeElement.blur();scrollTo(0,1900);WholeheartedExperience.notify('Your writing has been kept. Please review the next step.');")

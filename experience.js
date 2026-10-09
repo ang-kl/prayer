@@ -12,7 +12,7 @@
   if(typeof module==='object'&&module.exports){module.exports={metrics};return;}
   const doc=root.document;
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let host=null,dock=null,notice=null,pending=null,frame=0,serial=0,lastReturn=null,lastGeometry=null;
+  let host=null,dock=null,notice=null,pending=null,frame=0,serial=0,lastReturn=null,lastGeometry=null,lastKeyboard=false,settleTimer=0;
   const expanded=new Map();
   const $=s=>doc.querySelector(s);
   const editable=e=>!!e?.matches('textarea,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]),[contenteditable=true]');
@@ -32,6 +32,8 @@
     html.dataset.compactControls=String(v.compact);html.dataset.keyboard=String(v.keyboard);
     html.dataset.layoutOrientation=root.innerWidth>root.innerHeight?'landscape':'portrait';
     if(!dock)return;
+    // A18: on a phone the floating bar waits until the reader is two screens down the page.
+    dock.dataset.far=String(root.scrollY>2*root.innerHeight);
     dock.hidden=!!$('#reader')?.open;
     if(!dock.hidden)html.style.setProperty('--tools-height',dock.getBoundingClientRect().height+'px');
     const extent=Math.max(0,doc.documentElement.scrollHeight-root.innerHeight);
@@ -40,7 +42,10 @@
     const top=v.top+20;
     let current=null;for(const e of doc.querySelectorAll('#main [data-toc-label]'))if(e.getBoundingClientRect().top<=top)current=e;
     dock.dataset.current=current?.id||'main';
-    if(v.keyboard||resized)requestAnimationFrame(()=>avoidOverlap(doc.activeElement));
+    // I19: adjust once, 150ms after the keyboard opens or the viewport resizes (rotation), never in
+    // answer to a scroll, an input or a growing textarea; the browser alone keeps the caret in view.
+    const opened=v.keyboard&&!lastKeyboard;lastKeyboard=v.keyboard;
+    if(opened||resized){clearTimeout(settleTimer);settleTimer=setTimeout(()=>{settleTimer=0;avoidOverlap(doc.activeElement);},150);}
   }
   function visibleBounds(target){
     const v=view();let top=v.top+20,bottom=v.top+v.height-20;
@@ -55,7 +60,9 @@
   }
   function avoidOverlap(target){
     if(!target?.isConnected||target.closest('dialog,#page-tools,#notice')||!$('#main')?.contains(target))return;
-    const r=target.getBoundingClientRect(),b=visibleBounds(target);
+    // A field is measured together with its label, so the one adjustment keeps the label and the first line in view.
+    const t=target.getBoundingClientRect(),own=target.matches('textarea,input,select')?target.closest('label'):null,l=own?own.getBoundingClientRect():t;
+    const r={top:Math.min(l.top,t.top),bottom:t.bottom,height:t.bottom-Math.min(l.top,t.top)},b=visibleBounds(target);
     let by=0;
     if(r.top<b.top)by=r.top-b.top;
     else if(r.bottom>b.bottom)by=r.height>b.bottom-b.top?r.top-b.top:r.bottom-b.bottom;
