@@ -17,6 +17,7 @@ scope:
   - "README.md"
   - "tests/simple-path.test.cjs"
   - "tests/simple-path-browser.py"
+  - "tests/scroll-stability-browser.py"   # Amendment 2
   - ".github/workflows/preview-check.yml"   # manual-dispatch steps for the new checks (A16)
 verify: ""
 ---
@@ -156,3 +157,39 @@ Acceptance criteria added (the A21 exceptions apply to tap_targets):
 - [ ] The header is at most 72px tall at Standard size on every portrait phone 360px wide and up, and at most 112px at 320. The logo link is at least 32px tall, the tabs and Aa at least 40px, and every other control at least 48px → header_height + tap_targets
 - [ ] At least 85% of the first-screen rows below the header hold text or controls at 430x932, 393x852 and 375x667. Measured as the union of pixel rows covered by leaf elements that contain text or are form controls, from the header's bottom edge to the viewport's bottom edge → first_screen_density
 - [ ] Body line spacing is 1.45 (±0.02) with 20px body text → line_spacing
+
+## Amendment 2 · 09-10 '26 · scroll stability and the floating button
+Appended after the release of `7741471` (Production, 14:02 SGT), from the owner's report at 14:13 SGT that the live page still jumps up and down, and their answers at 14:16 SGT. Everything above stays in force except where this amendment corrects it.
+
+Owner's observations: the page jumps while scrolling with a finger, when tapping into a box, and while typing (iPhone Safari). Density stays as released. The floating button should be smaller, hidden at the top and at the bottom, and hidden while the finger is scrolling.
+
+Causes found in the released code (evidence is file:line; the iOS behaviour is inference from documented Safari viewport behaviour, not reproduced here, since no iOS device is available):
+- C1 Reply boxes and prayer boxes are capped with `dvh` and grow with their content (`experience.css:62` `max-height:50dvh` and `:86` `max-height:min(36rem,65dvh)`, both with `field-sizing:content`; `field-sizing` is new in this redesign, `5d8c0ee` had fixed rows). On iOS Safari `dvh` changes as the toolbars collapse and expand during a finger scroll, so every box at its cap changes height while the page scrolls, which moves everything below it: the scroll jump.
+- C2 Tapping a box triggers two app scrolls during Safari's own keyboard animation: `experience.js:184` (120ms after focus) and `:48` (150ms after each viewport resize, re-armed by every intermediate keyboard height): the tap jump.
+- C3 `resized` at `experience.js:29-30` counts a height change as a resize. On iOS `innerHeight` changes whenever the toolbars collapse while Safari pans to follow the caret, so typing re-triggers the `:48` adjustment: the typing jump.
+- C4 The Contents button is 132x48 with a word, and it toggles at exactly two screens (`experience.js:36`), so it flickers around that boundary and competes with the content.
+
+| ID | Assumption | Status | Note |
+|----|------------|--------|------|
+| A23 | In-flow elements are never sized with `dvh`, `vh`, `svh` fractions that change during a scroll, or `--vp-height`; boxes are capped in rem (reply 24rem, prayers 36rem) and keep `field-sizing:content` | confirmed | owner, 14:16 SGT ("while scrolling") |
+| A24 | The app scrolls at most once per keyboard opening, 400ms after the last viewport change, and only when the focused box or its label is more than 24px outside the visible area; it never scrolls on focus alone, on typing, or on a height-only viewport change | confirmed | owner, 14:16 SGT ("tap", "type") |
+| A25 | On phones the floating button is one round 48x48 icon button with an accessible name and no visible word; it is hidden within two screens of the top (unchanged), within one screen of the end, and while the page is being scrolled, returning within 100ms after the scroll stops | confirmed | owner, 14:16 SGT |
+| A26 | Density stays as released (A20) | confirmed | owner, 14:16 SGT |
+| A27 | New checks go in a new file `tests/scroll-stability-browser.py`; no existing test file changes | confirmed | keeps F7 out of this amendment |
+
+| ID | Maxim | Scope | Limit | Contrary | Check |
+|----|-------|-------|-------|----------|-------|
+| I21 | Nothing in the page flow changes size because the viewport height changed | styles.css, experience.css | Fixed overlays (reader, notice, bar) may use viewport units | Boxes that breathe with the toolbars and shake the page | scroll-stability-browser.py toolbar_no_shift + static scan no_dynamic_units |
+| I22 | The app never fights the browser for the scroll position: one adjustment per keyboard opening at most, after it settles | experience.js | The owner's own navigation (Go deeper, Next, Go to Save, Contents) may scroll once | Timers that scroll during Safari's animations | scroll-stability-browser.py tap_no_jump, typing_no_jump (existing) |
+| I23 | The floating button never competes with reading or typing | experience.js, experience.css | Wider screens keep Contents, Up and Down past two screens | A bar that shows at the ends or while scrolling | scroll-stability-browser.py fab_round, fab_hidden_near_end, fab_hidden_while_scrolling + existing bar checks |
+
+Acceptance criteria added:
+- [ ] No in-flow element uses `dvh`, `vh`, `svh` or `var(--vp-height)` in its sizing; the reader, the notice and the bar may → no_dynamic_units
+- [ ] With a focused reply box and `innerHeight` shrinking by 60px in three steps (toolbar model), no textarea changes height and the app makes no scroll → toolbar_no_shift
+- [ ] Tapping a box, then a five-step keyboard animation over 250ms: the app makes at most one scroll, no earlier than 400ms after the last step, and none when the box is already within view → tap_no_jump
+- [ ] On phones the bar is a single 48x48 button with no visible text and an aria-label; its width equals its height → fab_round
+- [ ] The bar is hidden when scrollY is within one screen of the end, and at the very end → fab_hidden_near_end
+- [ ] During a burst of scroll events the bar is hidden; it is visible 100ms after the last one (and within the existing checks' 160ms) → fab_hidden_while_scrolling
+- [ ] The existing suites pass unchanged: 163 node tests, simple-path-browser.py 29/29, the three existing browser suites; preview-check.yml also runs the new file on manual dispatch (A16)
+
+Scope addition for this amendment: `tests/scroll-stability-browser.py` (new). The scope list above already covers experience.js, experience.css, styles.css and preview-check.yml.
