@@ -1,7 +1,7 @@
 /* The open W.H.E.M.S. workspace. Only explicit AI buttons send the current issue. */
 (function(root){'use strict';const G=root.WholeheartedGuidance,C=root.WholeheartedCore,UX=root.WholeheartedExperience;
 let host=null,busy=false,controller=null,lastUI=null,quickAt=0;
-const P=root.WholeheartedPrayerOutput,candidates=new WeakMap();const consents={pray:false,journal:false};
+const P=root.WholeheartedPrayerOutput,candidates=new WeakMap(),localDrafts=new WeakMap();const consents={pray:true,journal:false};   // A28: AI consent starts ticked; A30: localDrafts remembers the app's own drafts
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label={sentence:'One-sentence prayer',whems:'W.H.E.M.S. prayer',extended:'Extended prayer'};
 /* Only the acronym is kept from browser translation; every other word stays translatable. */
@@ -127,8 +127,11 @@ function init(h){host=h;
   if(UX.requireActions(missing,b,action==='reflect'?'the AI questions':'making your prayers'))return;
   if(action==='reflect'&&d.journey.turns.length>=12){host.notify('This entry has had 12 rounds of AI help. Save it and add a follow-up to keep its history.');UX.reveal('#guide-save');return;}
   const kinds=target==='all'?P.KINDS:[target];
-  if(['local','prayers'].includes(action)&&kinds.some(k=>d.prayerForms?.[k]?.trim())&&!confirm('Replace '+(target==='all'?'these three prayers':'this prayer')+'? Any edits you make while the new words are prepared will be kept. Saved entries are unchanged.'))return;
-  if(action==='local'){const f=G.local(d);writeForms(d,f,'Local starting prayer - no AI');status('Your three prayers are ready below. Nothing was sent. Read them and change any words you wish.','status',true);if(quick)UX.reveal('#guide-prayers h2');return;}
+  // A30: the app's own unedited drafts are replaced without a question; edited or AI-written prayers still get it. Cancel still lands on the prayers.
+  const unedited=k=>!d.prayerForms?.[k]?.trim()||d.prayerForms[k]===localDrafts.get(d)?.[k];
+  if(['local','prayers'].includes(action)&&!kinds.every(unedited)&&!confirm('Replace '+(target==='all'?'these three prayers':'this prayer')+'? Any edits you make while the new words are prepared will be kept. Saved entries are unchanged.')){if(action==='local')UX.reveal('#prayer-sentence');return;}
+  // A29: either "Pray with what I have written" button lands on the first prayer's words, not on the section heading.
+  if(action==='local'){const f=G.local(d);writeForms(d,f,'Local starting prayer - no AI');localDrafts.set(d,f);status('Your three prayers are ready below. Nothing was sent. Read them and change any words you wish.','status',true);UX.reveal('#prayer-sentence');return;}
   const data=G.payload(d,action);data.target=target;const snapshot=JSON.stringify(data),baseline=G.forms(d.prayerForms);
   busy=true;controller=new AbortController();document.getElementById('guidance-service-status')?.remove();
   if(action==='prayers'){host.notify('');status('Preparing '+(target==='all'?'all three prayers':label[target])+'. They will fill in place. Your issue, replies and scroll position are kept.');for(const k of kinds)fieldFeedback(k,'Preparing with AI','You can keep writing. Any edits you make here will be kept.');}

@@ -121,7 +121,7 @@ try:
     def prerequisites():
       page.locator('#guide-prayers-ai').click();settle()
       assert page.locator('#guidance-issue-action-note').inner_text().find('Suggested starting wording')>=0
-      assert not page.locator('#guidance-consent').is_checked();assert calls()==0
+      assert page.locator('#guidance-consent').is_checked();assert calls()==0   # A28: ticked by default; nothing is sent while the issue is missing
       page.locator('#guidance-issue').fill(ISSUE);page.locator('#guidance-consent').check()
       page.locator('[data-journey=context]').fill(CONTEXT)
     check('Missing information identifies the field and supplies wording without auto-filling or consent',prerequisites)

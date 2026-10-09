@@ -16,8 +16,9 @@ source; package version and journal schema have independent purposes.
 `Pray` starts with one box: write what is happening and what you are trying to decide.
 One tap on "Pray with what I have written" makes three prayers on the device, and nothing
 is sent anywhere. The five areas (Will, Heart, Emotions, Mind and Soul) are optional, one
-short question each, and any of them can be skipped. AI help runs only after the consent
-box is ticked; the AI summary and questions can be corrected before they are relied on.
+short question each, and any of them can be skipped. AI help runs only while the consent
+box is ticked (it starts ticked; untick it and nothing is sent); the AI summary and
+questions can be corrected before they are relied on.
 The three prayers (one sentence, W.H.E.M.S. and an extended prayer in an older devotional
 style) sit together and can be edited one by one. Saving is explicit and stays in the
 browser. The floating Contents button appears after two screens of reading and leaves
