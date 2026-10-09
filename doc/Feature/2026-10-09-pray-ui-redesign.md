@@ -19,6 +19,9 @@ scope:
   - "tests/simple-path-browser.py"
   - "tests/scroll-stability-browser.py"   # Amendment 2
   - ".github/workflows/preview-check.yml"   # manual-dispatch steps for the new checks (A16)
+  - "doc/background.MD"   # Amendment 3: one sentence on the consent default (A28)
+  - "tests/experience-browser.py"   # Amendment 3: A31 lines only
+  - "tests/inplace-browser.py"   # Amendment 3: A31 line only
 verify: ""
 ---
 
@@ -198,3 +201,32 @@ Scope addition for this amendment: `tests/scroll-stability-browser.py` (new). Th
 Measured on the released build: at 390x844 the Save section's top sits 227px from the end of the page (320x568: 633px; 844x390: 357px), and tests/experience-browser.py:171 expects the floating button to be visible there. The owner chose to keep that test unchanged and to hide the button only at the very end. This corrects A25 and the fab_hidden_near_end criterion:
 - A25 (corrected): the button is hidden within two screens of the top (unchanged), within 48px of the end of the page (the page cannot scroll further), and while the page is being scrolled, returning within 100ms after the scroll stops. It stays available at the Save section.
 - fab_hidden_near_end (corrected): the bar is hidden when scrollY is within 48px of the end and at the very end; it is visible at the Save section (scrolled so that #guide-save sits at the top) and at three screens.
+
+## Amendment 3 · 09-10 '26 16:05 SGT · the Pray buttons land on the prayers; consent on by default
+Appended after the release of `e360dfe` (Production READY, 15:54 SGT), from the owner's messages of 16:02 SGT: "By default - switch on 'I agree to send the current issue and replies for AI guidance.'" and the two "Pray with what I have written" buttons "are not wired to jump to the prayer session and trigger the prayers". Everything above stays in force except where this amendment corrects it. The wider simplification of the page (owner, 15:52 SGT; proposal of 15:58 SGT) is not part of this amendment and waits for the owner's Invariants and Close slots.
+
+Findings on the released build (Chromium 390x844 with the keyboard fixture; file:line):
+- F1 The quick button under the issue box does make the three prayers and jumps to the "Your three prayers" heading (`journey-ui.js:131`, reveal `#guide-prayers h2`). From that heading the first prayer's text begins 1,247px lower, behind "Who is praying?", the principle, three buttons, the AI state line and the permission link, so the screen after the tap shows only buttons: it looks as if nothing was made.
+- F2 The in-section button "Pray with what I have written (nothing is sent)" runs the same action, but when prayers already exist it first asks "Replace these three prayers?" (`journey-ui.js:130`, `confirm()`), and after Yes it does not move the page; after Cancel nothing happens. Either way the screen does not change.
+- F3 The AI consent box starts unticked (`journey-ui.js:4` `consents.pray=false`; markup at `:34`).
+
+| ID | Assumption | Status | Note |
+|----|------------|--------|------|
+| A28 | The AI consent box is ticked by default on every page load; unticking it still stops AI requests at once; the quick path still sends nothing. README lines 19-20 and background.MD say so. Owner's instruction, 16:02 SGT. Noted for the owner before approval: a pre-ticked box is not valid consent under the GDPR (Art. 4(11), Recital 32) and Singapore's PDPC guidance discourages it; this corrects the hardest invariant in Close from "never ticks AI consent" to "never sends anything" | pending | the owner's APPROVE of this amendment confirms it |
+| A29 | After either "Pray with what I have written" button the page lands with the first prayer's heading at the top and its text on screen (reveal `#prayer-sentence`), not the section heading | pending | |
+| A30 | No "Replace?" question when the existing three prayers are the app's own unedited local drafts; the question stays when the person edited any prayer or AI wrote them. After Cancel, the page still lands on the first prayer | pending | |
+| A31 | Existing tests that assert the unticked consent box change only as far as A28 requires: tests/simple-path.test.cjs:292, tests/simple-path-browser.py:343, :369, :458, :1002, tests/experience-browser.py:102, tests/inplace-browser.py:124. The owner pre-approves these F7 edits here, as A22 did | pending | |
+
+| ID | Maxim | Scope | Limit | Contrary | Check |
+|----|-------|-------|-------|----------|-------|
+| I24 | One tap on either Pray button shows a prayer's words on the next screen | journey-ui.js, experience.js | Phones 320px wide and up, portrait and landscape | A screen of buttons after the tap | simple-path-browser.py quick_lands_on_prayer (new) |
+| I25 | The app never asks before replacing its own unedited drafts | journey-ui.js | Edited or AI-written prayers still get the question | A dialog that reads like an error | simple-path-browser.py replace_only_when_edited (new) |
+| I26 | The quick path sends nothing, ticked box or not (unchanged) | journey-ui.js | | | simple-path-browser.py "consent ticked" (existing, :1003-1018) |
+
+Acceptance criteria added:
+- [ ] After the quick tap at 390x844, 320x568 and 844x390, the sentence prayer's textarea top is inside the viewport and its value is at least 50 characters → quick_lands_on_prayer
+- [ ] Tapping the in-section button with unedited local drafts raises no dialog and lands on the first prayer; after editing one prayer it raises the question, and Cancel keeps the edit → replace_only_when_edited
+- [ ] The consent box is checked on load; unticking it stops AI requests as before; the quick path makes no request → existing consent checks adjusted per A31
+- [ ] All existing suites pass with only the A31 edits
+
+Scope addition: `doc/background.MD` (one sentence), and the A31 lines in `tests/experience-browser.py` and `tests/inplace-browser.py`; journey-ui.js, experience.js, README.md, tests/simple-path.test.cjs and tests/simple-path-browser.py are already listed.
