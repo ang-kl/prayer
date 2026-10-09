@@ -60,3 +60,14 @@ jobs:
           TEST_BROWSER: webkit
           EVIDENCE_DIR: ${{ runner.temp }}/evidence
         run: python tests/simple-path-browser.py
+      - name: Scroll stability on phones (Chromium)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/evidence
+        run: python tests/scroll-stability-browser.py
+      - name: Scroll stability on phones (Linux WebKit, not physical Safari)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TEST_BROWSER: webkit
+          EVIDENCE_DIR: ${{ runner.temp }}/evidence
+        run: python tests/scroll-stability-browser.py
