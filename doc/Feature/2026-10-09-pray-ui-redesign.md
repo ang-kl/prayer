@@ -123,3 +123,36 @@ Portrait: 320x568, 360x740, 360x800, 375x667, 375x812, 390x844, 393x852, 402x874
 ## Evidence
 Filled at the end: INVARIANTS REPORT, verify output, browser-suite results, screenshots per matrix size, PR link.
 Editing this file after approval voids the approval; append amendments and ask for APPROVE again.
+
+## Amendment 1 · 09-10 '26
+Appended after the approval of 08:08 SGT, from the owner's iPhone Safari screenshots and answers given between 10:14 and 10:35 SGT. Everything above stays in force except where this amendment corrects it.
+
+Evidence (Chromium on the live build `5d8c0ee`, at the owner's phone size 430x932):
+- The header is 143px, 15% of the screen.
+- The floating bar is 310x48px, 72% of the width.
+- Body line spacing is 1.65.
+- Only 48% of the first-screen rows below the header hold text or controls.
+- The issue box is 1.73 screens down.
+- Typing jump reproduced with the existing keyboard model: the page moves 60px down and back up on every keystroke, because the app re-scrolls to clear the floating bar (experience.js:43, :61, bar at experience.css:64) while the browser keeps the caret visible.
+
+| ID | Assumption | Status | Note |
+|----|------------|--------|------|
+| A18 | Floating bar: hidden while the keyboard is open (H1); appears only after scrolling more than two screens down (H2); on phones (narrower than 700px) a single 48px Contents button with no Up/Down (H3); wider screens keep Contents, Up and Down | confirmed | owner, 10:26 SGT |
+| A19 | The typing-jump fix ships with this redesign; there is no separate hotfix, so the jump stays on the live site until release | confirmed | owner, 10:26 SGT |
+| A20 | "Less white space" means Denser: header at most 72px on phones 360px wide and up (at most 112px at 320); at least 85% of the first-screen rows below the header hold text or controls; body line spacing 1.45; body text stays 20px | confirmed | owner, 10:26 and 10:35 SGT |
+| A21 | Correction to A17 for the header only: row 1 is the logo and title as a 32px-tall link; row 2 holds the Pray, Journal and Scripture tabs and the Aa button at 40px. Every other control stays at least 48px | corrected | owner's choice, 10:35 SGT; all three still meet WCAG 2.5.8 (24px minimum) |
+| A22 | The existing test lines tests/experience-browser.py:176-177, :213, :215 and :232 may change only as far as A18 requires. That file is outside the scope list, so each edit raises the owner's F3 and F7 confirmation | confirmed | owner, 10:26 SGT |
+
+| ID | Maxim | Scope | Limit | Contrary | Check |
+|----|-------|-------|-------|----------|-------|
+| I19 | While the keyboard is open, the app never scrolls the page in answer to typing or to the browser's own panning | experience.js | One adjustment after a focus or a real viewport resize, once the viewport has settled | The app and the browser fighting over the scroll position, which makes the screen jump | simple-path-browser.py typing_no_jump |
+| I20 | The floating bar never sits where the browser keeps the caret | experience.js, experience.css | Wider screens keep Up and Down when no field is focused | The bar covering the text being typed | simple-path-browser.py bar_hidden_while_typing |
+
+Acceptance criteria added (the A21 exceptions apply to tap_targets):
+- [ ] Typing: with the keyboard model open and the caret at the end of a long reply, ten cycles of "browser brings the caret into view, then one keystroke" cause no window scroll by the app → simple-path-browser.py typing_no_jump
+- [ ] The bar is hidden while the keyboard is open and is back within 300ms after it closes → bar_hidden_while_typing
+- [ ] The bar is absent while scrollY is at most 2 x innerHeight and present beyond that → bar_after_two_screens
+- [ ] Below 700px wide the bar is one 48x48 Contents button with no Up/Down; at 768 and wider Contents, Up and Down remain → bar_phone_single_button
+- [ ] The header is at most 72px tall at Standard size on every portrait phone 360px wide and up, and at most 112px at 320. The logo link is at least 32px tall, the tabs and Aa at least 40px, and every other control at least 48px → header_height + tap_targets
+- [ ] At least 85% of the first-screen rows below the header hold text or controls at 430x932, 393x852 and 375x667. Measured as the union of pixel rows covered by leaf elements that contain text or are form controls, from the header's bottom edge to the viewport's bottom edge → first_screen_density
+- [ ] Body line spacing is 1.45 (±0.02) with 20px body text → line_spacing
