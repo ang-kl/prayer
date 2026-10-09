@@ -35,6 +35,8 @@ Version 1.0 for approval · 09-10 '26 18:30 SGT · from the owner's eight asks o
 UNDERSTANDING: a polish pass, not a restructure. The wider simplification of the page (owner, 15:52 SGT; proposal of 15:58 SGT) is still separate and not in this spec.
 GAPS closed by the owner's answers: title source (pre-fill from the issue), wording (librarian in the consent sentence), classic prayers (one link per tradition), Invariants and Close (use mine).
 
+## Assumptions
+
 | ID | Assumption | Status | Note |
 |----|------------|--------|------|
 | A32 | The Save title fills itself from the first eight words of the issue (trailing punctuation dropped, "…" when cut), updates while the issue is typed until the person edits the title, and stays editable; nothing else changes in Save | confirmed | owner, 18:14 SGT |
@@ -47,6 +49,8 @@ GAPS closed by the owner's answers: title source (pre-fill from the issue), word
 | A39 | Invariants and Close as written above | confirmed | owner, 18:14 SGT |
 | A40 | Test edits pre-approved: tests/simple-path.test.cjs:15 CONSENT constant; tests/about-introduction.test.cjs:16, the regex that matches the consent sentence in journey-ui.js; any line in tests/simple-path-browser.py that quotes the old consent sentence or "AI help is"; no other existing test file changes. Owner's F7 confirmation is given by this approval | pending | |
 | A41 | Links cannot be fetched from this sandbox (proxy denies all hosts); the owner opens the new Anglican link once before or after release. The three existing links have been live since `5d8c0ee` | pending | |
+
+## Invariants
 
 | ID | Maxim | Scope | Limit | Contrary | Check |
 |----|-------|-------|-------|----------|-------|
