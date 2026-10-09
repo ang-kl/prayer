@@ -59,7 +59,7 @@ main{padding-bottom:calc(max(16px,var(--inset-b)) + 24px)}
 .guidance-source{display:inline-block;font-size:var(--meta);padding:4px 12px;border:1px solid var(--line);border-radius:24px;margin:0 0 8px;background:var(--ice)}
 .reply-question{font:400 var(--question)/1.3 var(--serif);margin:0 0 6px}
 .reply-field{margin:0}
-.reply-field textarea{border:1.5px solid var(--area-accent);background:var(--surface);min-height:5.75em;field-sizing:content;max-height:50dvh}
+.reply-field textarea{border:1.5px solid var(--area-accent);background:var(--surface);min-height:5.75em;field-sizing:content;max-height:24rem}
 .question-help{border:0;margin:4px 0 0;padding:0}
 .question-help>summary{font-size:var(--meta);padding:12px 2px}
 .question-help p{margin:0 0 10px}
@@ -83,7 +83,7 @@ main{padding-bottom:calc(max(16px,var(--inset-b)) + 24px)}
 .teaching-guardrails li{margin:0 0 10px}
 .teaching-summary-text{line-height:inherit}
 .final-prayers .principle{font-weight:600;margin:12px 0;padding-left:12px;border-left:3px solid var(--line)}
-.final-prayers textarea{font:400 var(--body)/1.7 var(--serif);field-sizing:content;max-height:min(36rem,65dvh);scrollbar-gutter:stable;overflow-anchor:none}
+.final-prayers textarea{font:400 var(--body)/1.7 var(--serif);field-sizing:content;max-height:36rem;scrollbar-gutter:stable;overflow-anchor:none}
 .prayer-form-block{border-top:1px solid var(--line);border-left:4px solid var(--line);padding:14px 0 12px 14px;margin:14px 0;scroll-margin-block:20px}
 .prayer-form-block[data-prayer-kind=sentence]{border-left-color:var(--area-s)}
 .prayer-form-block[data-prayer-kind=whems]{border-left-color:var(--area-w)}
@@ -142,7 +142,12 @@ html[data-compact-controls=false] .page-tools{flex-direction:column}
    it leaves while the keyboard is open, and phones narrower than 700px keep one Contents button. */
 html[data-compact-controls=true] .page-tools:not([data-far=true]){display:none}
 html[data-keyboard=true] .page-tools{display:none}
-@media(max-width:699px){.page-tools [data-fab=up],.page-tools [data-fab=down]{display:none}}
+/* Amendment 2: on compact layouts the bar also leaves while the finger is scrolling (experience.js sets data-scrolling)
+   and within 48px of the end of the page (part of data-far); on phones it is one round icon button. */
+html[data-compact-controls=true] .page-tools[data-scrolling=true]{display:none}
+@media(max-width:699px){.page-tools [data-fab=up],.page-tools [data-fab=down]{display:none}
+.page-tools [data-fab=contents]{width:48px;height:48px;min-width:48px;min-height:48px;padding:0;border-radius:50%;gap:0}
+.page-tools [data-fab=contents] span+span{display:none}}
 .page-contents{display:grid;gap:8px}
 .page-contents button{display:flex;justify-content:space-between;gap:12px;text-align:left;border:1px solid var(--line);border-left:4px solid var(--action);background:var(--surface);font-size:var(--body);min-height:52px}
 .page-contents [aria-current=location]{background:var(--sage);border-width:2px 2px 2px 5px}

@@ -223,6 +223,7 @@ try:
     check('Ten portrait/landscape sizes keep controls touchable and route errors to visible fields',orientations)
     def text_size():
       page.set_viewport_size({'width':390,'height':844});page.evaluate("document.documentElement.style.fontSize='200%'");settled()
+      page.evaluate('document.activeElement.blur();scrollTo(0,3*innerHeight)');settled()   # A18: the bar appears only past two screens
       fits('#page-tools');assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
       page.locator('[data-fab=contents]').click();fits('#reader');page.keyboard.press('Escape')
       page.evaluate("document.documentElement.style.fontSize=''");settled()

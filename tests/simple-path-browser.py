@@ -760,9 +760,12 @@ def simulated_safe_area():
       p=s.open();tag=f'{w}x{h}'
       p.evaluate("()=>{const s=document.documentElement.style;s.setProperty('--inset-l','59px');s.setProperty('--inset-r','59px');s.setProperty('--inset-b','34px');dispatchEvent(new Event('resize'));}");settle(p,250)
       probs+=[f'{tag}: {x}' for x in p.evaluate(INSET_SCAN,{**inset,'bar':False,'regions':['.site-header','#main']})]
+      # Amendment 2a: the bar hides within 48px of the end, so its clearance is measured 64px before the end; the footer at the end.
+      scroll_to(p,p.evaluate('()=>document.documentElement.scrollHeight-innerHeight')-64);settle(p,250)
+      if not bar_visible(p): probs.append(tag+': the floating bar is not shown 64px before the end of the page, so its inset clearance cannot be measured')
+      probs+=[f'{tag}: {x}' for x in p.evaluate(INSET_SCAN,{**inset,'bar':True,'regions':['#page-tools']})]
       scroll_to(p,10**6);settle(p,250)
-      if not bar_visible(p): probs.append(tag+': the floating bar is not shown at the end of the page, so its inset clearance cannot be measured')
-      probs+=[f'{tag}: {x}' for x in p.evaluate(INSET_SCAN,{**inset,'bar':True,'regions':['.site-footer','#page-tools']})]
+      probs+=[f'{tag}: {x}' for x in p.evaluate(INSET_SCAN,{**inset,'bar':False,'regions':['.site-footer']})]
       fb=p.evaluate(js(r'''const f=document.querySelector('.site-footer');if(!f)return null;let max=0;const w=document.createTreeWalker(f,NodeFilter.SHOW_TEXT);while(w.nextNode()){if(!w.currentNode.textContent.trim()||!vis(w.currentNode.parentElement))continue;const rg=document.createRange();rg.selectNodeContents(w.currentNode);for(const r of rg.getClientRects())if(r.width)max=Math.max(max,r.bottom);}return max;'''))
       if fb and fb>h-34+0.5: probs.append(f'{tag}: footer text reaches {fb:.0f}px at the end of the page; the home indicator inset starts at {h-34}px')
       shot(p,f'safe-area-{tag}.png')

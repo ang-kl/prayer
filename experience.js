@@ -12,7 +12,7 @@
   if(typeof module==='object'&&module.exports){module.exports={metrics};return;}
   const doc=root.document;
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let host=null,dock=null,notice=null,pending=null,frame=0,serial=0,lastReturn=null,lastGeometry=null,lastKeyboard=false,settleTimer=0;
+  let host=null,dock=null,notice=null,pending=null,frame=0,serial=0,lastReturn=null,lastGeometry=null,lastKeyboard=false,settleTimer=0,lastViewHeight=0,scrollTimer=0;
   const expanded=new Map();
   const $=s=>doc.querySelector(s);
   const editable=e=>!!e?.matches('textarea,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]),[contenteditable=true]');
@@ -26,26 +26,48 @@
   function schedule(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;layout();});}
   function layout(){
     const v=view(),html=doc.documentElement;
-    const geometry=[v.width,v.height,root.innerWidth,root.innerHeight].join(':');
+    // Amendment 2 (I22): only a width or orientation change counts as a resize. Height changes come from the
+    // keyboard and from Safari's toolbars, and the page must never be scrolled in answer to those.
+    const geometry=[root.innerWidth,root.innerWidth>root.innerHeight?'l':'p'].join(':');
     const resized=lastGeometry!==null&&geometry!==lastGeometry;lastGeometry=geometry;
     for(const [name,value] of Object.entries({'vp-height':v.height,'vp-width':v.width,'vp-top':v.top,'vp-left':v.left,'vp-bottom':v.bottom,'vp-right':v.right}))html.style.setProperty('--'+name,value+'px');
     html.dataset.compactControls=String(v.compact);html.dataset.keyboard=String(v.keyboard);
     html.dataset.layoutOrientation=root.innerWidth>root.innerHeight?'landscape':'portrait';
     if(!dock)return;
     // A18: on a phone the floating bar waits until the reader is two screens down the page.
-    dock.dataset.far=String(root.scrollY>2*root.innerHeight);
+    const extent=Math.max(0,doc.documentElement.scrollHeight-root.innerHeight);
+    // Amendment 2a: and it leaves again within 48px of the end of the page.
+    dock.dataset.far=String(root.scrollY>2*root.innerHeight&&root.scrollY<extent-48);
     dock.hidden=!!$('#reader')?.open;
     if(!dock.hidden)html.style.setProperty('--tools-height',dock.getBoundingClientRect().height+'px');
-    const extent=Math.max(0,doc.documentElement.scrollHeight-root.innerHeight);
     dock.querySelector('[data-fab=up]').disabled=root.scrollY<2;
     dock.querySelector('[data-fab=down]').disabled=root.scrollY>=extent-2;
     const top=v.top+20;
     let current=null;for(const e of doc.querySelectorAll('#main [data-toc-label]'))if(e.getBoundingClientRect().top<=top)current=e;
     dock.dataset.current=current?.id||'main';
-    // I19: adjust once, 150ms after the keyboard opens or the viewport resizes (rotation), never in
-    // answer to a scroll, an input or a growing textarea; the browser alone keeps the caret in view.
+    // I19, I22: adjust at most once per keyboard opening or rotation, 400ms after the viewport stops changing,
+    // and only when the focused box is really out of view (adjustOnce). Never in answer to a scroll, an input,
+    // a growing textarea or a height-only change; the browser alone keeps the caret in view.
     const opened=v.keyboard&&!lastKeyboard;lastKeyboard=v.keyboard;
-    if(opened||resized){clearTimeout(settleTimer);settleTimer=setTimeout(()=>{settleTimer=0;avoidOverlap(doc.activeElement);},150);}
+    const settling=v.keyboard&&v.height!==lastViewHeight;lastViewHeight=v.height;
+    // A keyboard opening settles over its animation, so its adjustment waits 450ms after the last change;
+    // a rotation or width change adjusts on the next frame.
+    if(opened||settling){clearTimeout(settleTimer);settleTimer=setTimeout(()=>{settleTimer=0;adjustOnce(doc.activeElement);},450);}
+    else if(resized&&!settleTimer)requestAnimationFrame(()=>adjustOnce(doc.activeElement));
+  }
+  function adjustOnce(target){
+    if(!target?.isConnected||target===doc.body||target.closest('dialog,#page-tools,#notice')||!$('#main')?.contains(target))return;
+    const t=target.getBoundingClientRect(),own=target.closest('label'),l=own?own.getBoundingClientRect():t;
+    const top=Math.min(l.top,t.top),b=visibleBounds(target),room=b.bottom-b.top;
+    if(top>=b.top-24&&t.bottom<=b.bottom+24)return;                       // already in view: leave it alone
+    if(t.bottom-top>room){                                                 // taller than the visible area
+      // Align the top only when the caret line would still be visible; otherwise the browser is keeping the caret in view.
+      const lineHeight=parseFloat(getComputedStyle(target).lineHeight)||28;
+      const line=typeof target.selectionStart==='number'?target.value.slice(0,target.selectionStart).split('\n').length:1;
+      if(t.top-top+line*lineHeight+8>room)return;
+    }
+    root.scrollBy({top:top-b.top-12,behavior:'instant'});
+    layout();   // the bar's state follows the app's own scroll at once, not at the next frame
   }
   function visibleBounds(target){
     const v=view();let top=v.top+20,bottom=v.top+v.height-20;
@@ -167,7 +189,7 @@
   function init(h){
     if(host)return;host=h;notice=$('#notice');notice.setAttribute('aria-atomic','true');
     dock=doc.createElement('nav');dock.id='page-tools';dock.className='page-tools';dock.setAttribute('aria-label','Page navigation');
-    dock.innerHTML='<button type="button" data-fab="contents" aria-label="Open table of contents" aria-haspopup="dialog"><span aria-hidden="true">☰</span><span>Contents</span></button><button type="button" data-fab="up" aria-label="Scroll up one screen" title="Scroll up one screen"><span aria-hidden="true">↑</span><span>Up</span></button><button type="button" data-fab="down" aria-label="Scroll down one screen" title="Scroll down one screen"><span aria-hidden="true">↓</span><span>Down</span></button>';
+    dock.innerHTML='<button type="button" data-fab="contents" aria-label="Open table of contents" aria-haspopup="dialog"><span aria-hidden="true">☰</span><span aria-hidden="true">Contents</span></button><button type="button" data-fab="up" aria-label="Scroll up one screen" title="Scroll up one screen"><span aria-hidden="true">↑</span><span>Up</span></button><button type="button" data-fab="down" aria-label="Scroll down one screen" title="Scroll down one screen"><span aria-hidden="true">↓</span><span>Down</span></button>';
     doc.body.append(dock);
     const footer=$('.site-footer');if(footer)footer.id='page-end';
     doc.addEventListener('click',e=>{
@@ -178,13 +200,16 @@
     for(const type of ['input','change'])doc.addEventListener(type,()=>{requestAnimationFrame(updateErrors);});
     doc.addEventListener('focusin',e=>{
       schedule();
-      // A validation jump can move focus before a keyboard-settling timer fires.
-      // Never scroll back to the old button after revealing the required field.
+      // Focus alone never scrolls the page (I22): the browser brings the field into view, and the keyboard
+      // settling in layout() makes the one adjustment. The timer only refreshes the bar and keyboard state
+      // once focus has settled, so a validation jump that moves focus first is left alone.
       const target=e.target;
-      setTimeout(()=>{if(doc.activeElement===target)avoidOverlap(target);},120);
+      setTimeout(()=>{if(doc.activeElement===target)schedule();},120);
     });
     doc.addEventListener('focusout',schedule);
-    root.addEventListener('scroll',schedule,{passive:true});root.addEventListener('resize',schedule,{passive:true});
+    // Amendment 2: while the page is being scrolled the bar steps aside; it returns 100ms after the last scroll event.
+    root.addEventListener('scroll',()=>{if(dock){dock.dataset.scrolling='true';clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{scrollTimer=0;dock.dataset.scrolling='false';schedule();},100);}schedule();},{passive:true});
+    root.addEventListener('resize',schedule,{passive:true});
     root.visualViewport?.addEventListener('resize',schedule,{passive:true});root.visualViewport?.addEventListener('scroll',schedule,{passive:true});
     root.screen?.orientation?.addEventListener('change',schedule);
     new MutationObserver(schedule).observe($('#reader'),{attributes:true,attributeFilter:['open']});
