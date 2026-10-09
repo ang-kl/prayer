@@ -94,6 +94,7 @@ try:
     check('All five contextual areas and all three final prayer forms are open',opened)
     def consent():
       page.locator('[data-journey=issue]').fill(ISSUE);page.locator('[data-journey=context]').fill(CONTEXT)
+      page.locator('[data-guidance-consent]').uncheck()   # A28: the box starts ticked; this check needs it unticked (owner's OK, 16:56 SGT)
       page.locator('[data-guide-action=reflect]').first.click()
       assert 'consent' in page.locator('.action-feedback').inner_text().lower();assert count_calls()==0
       page.locator('[data-guidance-consent]').check();page.locator('[data-guide-action=reflect]').first.click()

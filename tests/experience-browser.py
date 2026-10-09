@@ -95,6 +95,7 @@ try:
       assert r and r['x']>=-1 and r['x']+r['width']<=vp['width']+1,(sel,r)
     def blocked_from_bottom():
       page.set_viewport_size({'width':390,'height':844})
+      page.locator('#guidance-consent').uncheck();settled()   # A28: the box starts ticked; this check needs both prerequisites missing
       page.locator('#guide-prayers-ai').click();settled()
       assert page.locator('.action-feedback li').count()==2
       assert page.locator('#guidance-issue').get_attribute('aria-invalid')=='true'

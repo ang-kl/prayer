@@ -289,7 +289,7 @@ test('verbatim_invariant_lines: the principle lines and the consent sentence sta
   if(ok(decision,v+': #guide-decision missing')){const dt=visibleText(decision);for(const line of ['The next step I choose','These are considerations, not a divine verdict.'])ok(dt.includes(line),v+': #guide-decision lost "'+line+'"');}
   const consent=byId(dom,'guidance-consent');
   if(ok(consent,v+': #guidance-consent missing')){
-   ok(consent.attrs.type==='checkbox',v+': #guidance-consent is not a checkbox');ok(!('checked' in consent.attrs),v+': consent is ticked by default');
+   ok(consent.attrs.type==='checkbox',v+': #guidance-consent is not a checkbox');ok('checked' in consent.attrs,v+': consent is not ticked by default (A28)');
    const label=up(consent).find(a=>a.tag==='label')||els(dom).find(n=>n.tag==='label'&&n.attrs.for==='guidance-consent');
    if(ok(label,v+': the consent checkbox has no label (wrapping, or for="guidance-consent")'))ok(ownText(label).includes(CONSENT),v+': the consent sentence is not verbatim in its label: "'+ownText(label)+'"');
    ok(!inDetailsOrHidden(up(consent)),v+': the consent checkbox is hidden or inside a closed details');

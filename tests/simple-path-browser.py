@@ -340,7 +340,7 @@ def quick_issue_only():
       if not st['inPrayers']: probs.append(tag+': focus is not in #guide-prayers ('+st['focus']+')')
       elif not (0<=st['focusY']<st['h']): probs.append(tag+': the focused prayers element is off screen')
       if 'Nothing was sent' not in st['status']: probs.append(tag+': #prayer-flow-status does not say "Nothing was sent"')
-      if st['consent']: probs.append(tag+': consent was ticked')
+      if not st['consent']: probs.append(tag+': the consent box lost its default tick (A28)')
       if st['feedback']: probs.append(tag+': validation feedback appeared')
       if st['differs']: probs.append(tag+': the quick path must fill exactly WholeheartedGuidance.local(draft) (A3); '+', '.join(st['differs'])+' differ')
       if not (450<=st['extendedWords']<=900): probs.append(f"{tag}: extended prayer has {st['extendedWords']} words; 450 to 900 expected (I17)")
@@ -366,7 +366,7 @@ def quick_blank_issue():
       if s.writes() or (stored is not None and storage_state(p)!=stored): probs.append(tag+': storage was written')
       if s.dialogs: probs.append(tag+': dialog: '+s.dialogs[0])
       if any(v.strip() for v in forms_values(p)): probs.append(tag+': prayers were filled without an issue')
-      if p.locator('#guidance-consent').is_checked(): probs.append(tag+': consent was ticked')
+      if not p.locator('#guidance-consent').is_checked(): probs.append(tag+': the consent box lost its default tick (A28)')
   assert not probs,' | '.join(probs)
 
 TAP_PREP="""()=>{const d=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value');window.__formSets=0;
@@ -455,15 +455,15 @@ def ai_quick_path():
         try: focus_in(p,'#guidance-consent','x')
         except AssertionError: probs.append(tag+': "Go to the AI permission box" did not focus #guidance-consent')
         settle(p,200)
-        if p.locator('#guidance-consent').is_checked(): probs.append(tag+': navigation ticked consent')
-      p.locator('#guidance-consent').check();settle(p,150)
+        if not p.locator('#guidance-consent').is_checked(): probs.append(tag+': navigation unticked consent (A28: ticked by default)')
+      p.locator('#guidance-consent').uncheck();settle(p,150)   # A28: the box starts ticked, so the wording check runs the other way round
       after=p.evaluate(AI_STATE)
       if first and after:
-        if after['text']==first['text'] or first['text'].find(after['text'])>=0: probs.append(f"{tag}: #ai-state does not change when consent is ticked (\"{first['text']}\" -> \"{after['text']}\")")
-        p.locator('#guidance-consent').uncheck();settle(p,150)
-        again=p.evaluate(AI_STATE)
-        if again['text']!=first['text']: probs.append(f"{tag}: #ai-state does not return to its original wording when consent is unticked (\"{again['text']}\")")
+        if after['text']==first['text'] or first['text'].find(after['text'])>=0: probs.append(f"{tag}: #ai-state does not change when consent is unticked (\"{first['text']}\" -> \"{after['text']}\")")
         p.locator('#guidance-consent').check();settle(p,150)
+        again=p.evaluate(AI_STATE)
+        if again['text']!=first['text']: probs.append(f"{tag}: #ai-state does not return to its original wording when consent is ticked again (\"{again['text']}\")")
+      p.locator('#guidance-consent').check();settle(p,150)
       mine=control(p,'#guide-consent','Go to my prayers')
       if mine: click_id(p,mine[0]['id']);settle(p,300)
       p.locator('#guide-prayers-ai').click()
@@ -999,7 +999,7 @@ def quick_sends_nothing():
       sp=st['sp']
       if sp.get('sessionWrites') or sp.get('idb') or sp.get('beacons'): probs.append('full draft: session storage, IndexedDB or a beacon was used')
       if st['cookie']: probs.append('full draft: a cookie was set')
-      if st['consent'] or st['confirm']: probs.append('full draft: consent or the acknowledgement was ticked')
+      if not st['consent'] or st['confirm']: probs.append('full draft: the consent box lost its default tick, or the acknowledgement was ticked (A28)')
   # With consent ticked, the quick path must still take the local branch and send nothing.
   with Session(390,844) as s:
     p=s.open()
@@ -1046,6 +1046,49 @@ const lines=t.value.split('\n').length;const caretTop=r.y+parseFloat(cs.borderTo
 const vh=arg;const by=caretBottom-(vh-8);const beforeY=scrollY;
 if(Math.abs(by)>0.5)window.__sp.scrollBy({top:by,left:0,behavior:'instant'});
 const moved=scrollY-beforeY;return {scrollY,caretTop:caretTop-moved,caretBottom:caretBottom-moved};''')
+LANDING=js(r'''const t=document.querySelector('[data-prayer-form=sentence]'),h=document.querySelector('#prayer-sentence h3');if(!t)return {missing:true};const r=R(t);
+return {top:r.y,bottom:r.y+r.height,h:innerHeight,len:t.value.trim().length,headingY:h?R(h).y:null,focus:name(document.activeElement)};''')
+def quick_lands_on_prayer():
+  # Amendment 3 (I24, A29): after the quick tap the first prayer's words are on the screen, not a second row of buttons.
+  probs=[]
+  for w,h in ((390,844),(320,568),(844,390)):
+    with Session(w,h) as s:
+      p=s.open();tag=f'{w}x{h}';quick_tap(s)
+      try: forms_filled(p)
+      except AssertionError as e: probs.append(tag+': '+str(e));continue
+      settle(p,500);m=p.evaluate(LANDING);shot(p,f'landing-{tag}.png')
+      if m.get('missing'): probs.append(tag+': the sentence prayer box is missing');continue
+      if not (0<=m['top']<m['h']): probs.append(f"{tag}: the sentence prayer box starts at {m['top']:.0f}px; the screen is {m['h']}px")
+      if m['len']<50: probs.append(f"{tag}: the sentence prayer holds only {m['len']} characters")
+      if m['headingY'] is None or m['headingY']<-1: probs.append(tag+': the first prayer heading is above the screen')
+      if s.dialogs: probs.append(tag+': dialog: '+s.dialogs[0])
+  assert not probs,' | '.join(probs)
+
+def replace_only_when_edited():
+  # Amendment 3 (I25, A30): the app's own unedited drafts are replaced without a question; edited words get the question, and Cancel keeps them.
+  probs=[]
+  with Session(390,844) as s:
+    p=s.open();s.mark();quick_tap(s);forms_filled(p);settle(p,1000)   # past the 900ms same-tap guard
+    p.evaluate("()=>{window.__asked=[];window.__answer=false;window.confirm=m=>{window.__asked.push(m);return window.__answer;};}")
+    scroll_to(p,0);settle(p,200);p.locator('[data-guide-action=local]').click();settle(p,600)
+    m=p.evaluate(LANDING);asked=p.evaluate('()=>window.__asked.length')
+    if asked: probs.append(f'unedited drafts: the in-section button asked {asked} question(s)')
+    if not (0<=m['top']<m['h']): probs.append(f"unedited drafts: the page did not land on the first prayer (box top {m['top']:.0f}px)")
+    mine='My own words, kept as they are.'
+    p.locator('[data-prayer-form=sentence]').fill(mine);settle(p,200)
+    scroll_to(p,0);settle(p,200);p.locator('[data-guide-action=local]').click();settle(p,600)
+    asked=p.evaluate('()=>window.__asked.length');m=p.evaluate(LANDING)
+    if asked!=1: probs.append(f'edited prayer: expected one question, got {asked}')
+    if p.locator('[data-prayer-form=sentence]').input_value()!=mine: probs.append('edited prayer: Cancel did not keep the edited words')
+    if not (0<=m['top']<m['h']): probs.append(f"edited prayer, Cancel: the page did not land on the first prayer (box top {m['top']:.0f}px)")
+    p.evaluate('()=>{window.__answer=true;}');p.locator('[data-guide-action=local]').click();settle(p,600)
+    asked=p.evaluate('()=>window.__asked.length')
+    if asked!=2: probs.append(f'edited prayer, Yes: expected a second question, got {asked}')
+    if p.locator('[data-prayer-form=sentence]').input_value()==mine: probs.append('edited prayer, Yes: the prayer was not replaced')
+    if s.calls() or s.since(): probs.append('something was sent')
+    if s.dialogs: probs.append('a native dialog appeared: '+s.dialogs[0])
+  assert not probs,' | '.join(probs)
+
 def typing_no_jump():
   probs=[]
   with Session(390,844) as s:
@@ -1205,7 +1248,7 @@ def look_rules():
 
 CHECKS=[first_screen,quick_issue_only,quick_blank_issue,quick_double_tap,go_to_save,ai_quick_path,deep_path_navigation,one_primary_per_screen,save_promise_line,
   safety_list,matrix_no_overflow,tap_targets,min_font,rotation,simulated_safe_area,landscape_keyboard,csp_zero_violations,forced_colors,typed_scripts,
-  quick_path_keeps_whems_in_dom,quick_sends_nothing,typing_no_jump,bar_hidden_while_typing,bar_after_two_screens,bar_phone_single_button,header_height,first_screen_density,line_spacing,look_rules]
+  quick_path_keeps_whems_in_dom,quick_sends_nothing,typing_no_jump,bar_hidden_while_typing,bar_after_two_screens,bar_phone_single_button,quick_lands_on_prayer,replace_only_when_edited,header_height,first_screen_density,line_spacing,look_rules]
 
 results=[]
 def run(fn):

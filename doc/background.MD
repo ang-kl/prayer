@@ -207,6 +207,8 @@ Contextual guidance is optional.
 
 Without AI, the user can still use the open W.H.E.M.S. prompts and create local structured prayer drafts.
 
+The consent box starts ticked (owner's decision, 09-10 '26); unticking it stops every AI request at once, and the on-device prayers never send anything.
+
 When AI guidance is deliberately requested and consented to, the app may send the **current issue, current context, relevant replies and selected notes** to the configured OpenAI model so it can propose:
 
 - a summary of the concern;
