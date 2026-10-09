@@ -125,7 +125,7 @@ Filled at the end: INVARIANTS REPORT, verify output, browser-suite results, scre
 Editing this file after approval voids the approval; append amendments and ask for APPROVE again.
 
 ## Amendment 1 · 09-10 '26
-Appended after the approval of 08:08 SGT, from the owner's iPhone Safari screenshots and answers given between 10:14 and 10:35 SGT. Everything above stays in force except where this amendment corrects it.
+Appended after the approval of 08:08 SGT, from the owner's iPhone Safari screenshots and answers given between 10:18 and 10:24 SGT. Everything above stays in force except where this amendment corrects it.
 
 Evidence (Chromium on the live build `5d8c0ee`, at the owner's phone size 430x932):
 - The header is 143px, 15% of the screen.
@@ -137,11 +137,11 @@ Evidence (Chromium on the live build `5d8c0ee`, at the owner's phone size 430x93
 
 | ID | Assumption | Status | Note |
 |----|------------|--------|------|
-| A18 | Floating bar: hidden while the keyboard is open (H1); appears only after scrolling more than two screens down (H2); on phones (narrower than 700px) a single 48px Contents button with no Up/Down (H3); wider screens keep Contents, Up and Down | confirmed | owner, 10:26 SGT |
-| A19 | The typing-jump fix ships with this redesign; there is no separate hotfix, so the jump stays on the live site until release | confirmed | owner, 10:26 SGT |
-| A20 | "Less white space" means Denser: header at most 72px on phones 360px wide and up (at most 112px at 320); at least 85% of the first-screen rows below the header hold text or controls; body line spacing 1.45; body text stays 20px | confirmed | owner, 10:26 and 10:35 SGT |
-| A21 | Correction to A17 for the header only: row 1 is the logo and title as a 32px-tall link; row 2 holds the Pray, Journal and Scripture tabs and the Aa button at 40px. Every other control stays at least 48px | corrected | owner's choice, 10:35 SGT; all three still meet WCAG 2.5.8 (24px minimum) |
-| A22 | The existing test lines tests/experience-browser.py:176-177, :213, :215 and :232 may change only as far as A18 requires. That file is outside the scope list, so each edit raises the owner's F3 and F7 confirmation | confirmed | owner, 10:26 SGT |
+| A18 | Floating bar: hidden while the keyboard is open (H1); appears only after scrolling more than two screens down (H2); on phones (narrower than 700px) a single 48px Contents button with no Up/Down (H3); wider screens keep Contents, Up and Down | confirmed | owner, 10:18-10:24 SGT |
+| A19 | The typing-jump fix ships with this redesign; there is no separate hotfix, so the jump stays on the live site until release | confirmed | owner, 10:18-10:24 SGT |
+| A20 | "Less white space" means Denser: header at most 72px on phones 360px wide and up (at most 112px at 320); at least 85% of the first-screen rows below the header hold text or controls; body line spacing 1.45; body text stays 20px | confirmed | owner, 10:18-10:24 SGT |
+| A21 | Correction to A17 for the header only: row 1 is the logo and title as a 32px-tall link; row 2 holds the Pray, Journal and Scripture tabs and the Aa button at 40px. Every other control stays at least 48px | corrected | owner's choice, 10:18-10:24 SGT; all three still meet WCAG 2.5.8 (24px minimum) |
+| A22 | The existing test lines tests/experience-browser.py:176-177, :213, :215 and :232 may change only as far as A18 requires. That file is outside the scope list, so each edit raises the owner's F3 and F7 confirmation | confirmed | owner, 10:18-10:24 SGT |
 
 | ID | Maxim | Scope | Limit | Contrary | Check |
 |----|-------|-------|-------|----------|-------|
