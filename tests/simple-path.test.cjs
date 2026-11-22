@@ -12,7 +12,7 @@ const read=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
 const C=require('../core.js'),S=require('../catalogue.js'),J=require('../journal.js'),G=require('../guidance-core.js'),T=require('../theme.js'),P=require('../prayer-output.js'),TE=require('../teaching.js');
 const KEYS=['W','H','E','M','S'],NAMES={W:'Will',H:'Heart',E:'Emotions',M:'Mind',S:'Soul'};
 const SAVE_PROMISE='Your words stay only on this page until you tap Save.';
-const CONSENT='I agree to send the current issue and replies for AI guidance.';
+const CONSENT='I agree to send the current issue and replies to AI for suggestions. Like a librarian, AI suggests; it does not guide.';   // A37
 const BROWSER_SOURCES=['index.html','app.js','journey-ui.js','experience.js','teaching.js','theme.js','guidance-core.js','prayer-output.js'];
 const CSS_SOURCES=()=>({'theme.js (css)':T.css,'styles.css':read('styles.css'),'experience.css':read('experience.css')});
 const QUESTION_ISSUE='Should I talk to my daughter or pray as she struggles with research?';

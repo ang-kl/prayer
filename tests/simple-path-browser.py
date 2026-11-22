@@ -1089,6 +1089,120 @@ def replace_only_when_edited():
     if s.dialogs: probs.append('a native dialog appeared: '+s.dialogs[0])
   assert not probs,' | '.join(probs)
 
+# ---- Pray screen polish (doc/Feature/2026-10-09-pray-polish.md) ----
+POLISH_SCAN=js(r'''const heads=[...document.querySelectorAll('#three-prayer-forms h3')].map(h=>T(h).trim());
+const links=[...document.querySelectorAll('#guide-prayers .prayer-links button')].map(b=>({text:T(b).trim(),h:R(b).h,locate:b.dataset.locate}));
+const backs=[...document.querySelectorAll('#three-prayer-forms [data-back-up]')].map(b=>({text:T(b).trim(),h:R(b).h,locate:b.dataset.locate}));
+return {heads,links,backs};''')
+def prayer_numbers_and_links():
+  # I27, A33-A35: numbered headings, three jump controls on the card, a way back under each prayer.
+  probs=[];want=['1. One-sentence prayer','2. W.H.E.M.S. prayer','3. Extended prayer']
+  for w,h in ((390,844),(320,568),(844,390)):
+    with Session(w,h) as s:
+      p=s.open();tag=f'{w}x{h}';quick_tap(s);forms_filled(p);settle(p,1000)   # past the 900ms same-tap guard
+      m=p.evaluate(POLISH_SCAN)
+      if m['heads']!=want: probs.append(f"{tag}: prayer headings are {m['heads']}")
+      if [x['text'] for x in m['links']]!=want: probs.append(f"{tag}: card links are {[x['text'] for x in m['links']]}")
+      if any(x['h']<47.5 for x in m['links']+m['backs']): probs.append(tag+': a jump control is under 48px tall')
+      if len(m['backs'])!=3 or any(x['locate']!='#guide-issue h2' for x in m['backs']): probs.append(f"{tag}: back controls {m['backs']}")
+      if len(m['links'])==3:
+        p.locator('#guide-prayers .prayer-links button').nth(2).click();settle(p,600)
+        r=p.locator('#prayer-extended').bounding_box()
+        if not r or not (-1<=r['y']<h*0.5): probs.append(f"{tag}: the third link did not bring #prayer-extended to the top (y {r and round(r['y'])})")
+      if len(m['backs'])==3:
+        p.locator('#prayer-extended [data-back-up]').click();settle(p,600)
+        r=p.locator('#guidance-issue').bounding_box()
+        if not r or not (0<=r['y']<h): probs.append(f"{tag}: the back control did not bring the issue box into view (y {r and round(r['y'])})")
+      if s.dialogs: probs.append(tag+': dialog: '+s.dialogs[0])
+  assert not probs,' | '.join(probs)
+
+COLOUR_SCAN=js(r'''const want={title:probe('var(--accent-title)'),alert:probe('var(--accent-alert)'),field:probe('var(--field)')};const bad=[];const shown=e=>vis(e)&&R(e).h>0;
+for(const h of document.querySelectorAll('#main h2'))if(!h.closest('#guardrails')&&shown(h)&&getComputedStyle(h).color!==want.title)bad.push('h2 "'+T(h).trim().slice(0,30)+'" colour '+getComputedStyle(h).color);
+for(const h of document.querySelectorAll('#guardrails h2,#guide-consent h3'))if(shown(h)&&getComputedStyle(h).color!==want.alert)bad.push(name(h)+' colour '+getComputedStyle(h).color);
+for(const f of document.querySelectorAll('#main input:not([type=checkbox]):not([type=radio]),#main select,#main textarea'))if(shown(f)&&getComputedStyle(f).backgroundColor!==want.field)bad.push(name(f)+' background '+getComputedStyle(f).backgroundColor);
+return {bad:bad.slice(0,6),count:bad.length,want,paper:getComputedStyle(document.body).backgroundColor,card:probe('var(--surface)'),counts:{h2:document.querySelectorAll('#main h2').length,alerts:document.querySelectorAll('#guardrails h2,#guide-consent h3').length,fields:document.querySelectorAll('#main input:not([type=checkbox]):not([type=radio]),#main select,#main textarea').length}};''')
+def _rgb(s):
+  m=re.findall(r'[\d.]+',s or '');return [float(x) for x in m[:3]] if len(m)>=3 else None
+def _lum(c):
+  f=lambda x:(x/255)/12.92 if x/255<=0.03928 else ((x/255+0.055)/1.055)**2.4
+  return 0.2126*f(c[0])+0.7152*f(c[1])+0.0722*f(c[2])
+def _contrast(a,b):
+  x,y=_lum(a),_lum(b);return (max(x,y)+0.05)/(min(x,y)+0.05)
+def heading_and_field_colours():
+  # I28, A36: blue section titles, red caution headings, pale blue typing boxes, each above 4.5:1 on paper and card.
+  probs=[]
+  for w,h in ((390,844),(320,568),(844,390)):
+    with Session(w,h) as s:
+      p=s.open();tag=f'{w}x{h}';fill_issue(p);settle(p,200)
+      m=p.evaluate(COLOUR_SCAN)
+      if m['counts']['h2']<3 or m['counts']['alerts']!=2 or m['counts']['fields']<10: probs.append(f"{tag}: unexpected element counts {m['counts']}")
+      if m['count']: probs.append(f"{tag}: {m['count']} element(s) off the tokens, e.g. "+'; '.join(m['bad'][:3]))
+      paper=_rgb(m['paper']) or [250,246,238];card=_rgb(m['card']);ink=[34,29,43]
+      for key in ('title','alert'):
+        c=_rgb(m['want'][key])
+        for bg,where in ((paper,'paper'),(card,'card')):
+          if c and bg and _contrast(c,bg)<4.5: probs.append(f"{tag}: --accent-{key} on the {where} is {_contrast(c,bg):.2f}:1")
+      f=_rgb(m['want']['field'])
+      if f and card and f==card: probs.append(tag+': the field background equals the card background')
+      if f and _contrast(ink,f)<4.5: probs.append(f"{tag}: ink on the field background is {_contrast(ink,f):.2f}:1")
+  assert not probs,' | '.join(probs)
+
+NEW_CONSENT='I agree to send the current issue and replies to AI for suggestions. Like a librarian, AI suggests; it does not guide.'
+def librarian_wording():
+  # I29, A37: the consent sentence, the AI heading and the status line; nothing a person reads says "guidance".
+  probs=[]
+  with Session(390,844) as s:
+    p=s.open()
+    label=p.evaluate("()=>{const i=document.getElementById('guidance-consent');const l=i&&i.closest('label');return l?l.textContent.replace(/\\s+/g,' ').trim():null}")
+    if label!=NEW_CONSENT: probs.append(f'the consent label reads "{label}"')
+    head=p.evaluate("()=>document.querySelector('#guide-consent h3')?.textContent.trim()")
+    if head!='Ask AI for suggestions (optional)': probs.append(f'the AI heading reads "{head}"')
+    st=p.evaluate("()=>document.getElementById('ai-state')?.textContent.trim()")
+    if st!='AI suggestions are on (you agreed above).': probs.append(f'the status line reads "{st}"')
+    p.locator('#guidance-consent').uncheck();settle(p,150)
+    st=p.evaluate("()=>document.getElementById('ai-state')?.textContent.trim()")
+    if st!='AI suggestions are off.': probs.append(f'the status line after unticking reads "{st}"')
+    p.locator('#guidance-consent').check();settle(p,150)
+    text=p.evaluate("()=>document.querySelector('#main').innerText.toLowerCase()")
+    if 'guidance' in text:
+      i=text.find('guidance');probs.append('"guidance" is still read by a person: ...'+text[max(0,i-40):i+20].replace('\n',' ')+'...')
+  assert not probs,' | '.join(probs)
+
+def title_suggestion():
+  # I30, A32: the Save title fills itself from the first eight words of the issue and yields to the person's own title.
+  probs=[]
+  with Session(390,844) as s:
+    p=s.open();s.mark();box=p.locator('#guidance-issue');title=p.locator('#guide-save [data-field=topic]')
+    assert title.count(),'no title field in #guide-save'
+    box.click();p.keyboard.type('Should I talk to my daughter about her studies, or wait and pray first?');settle(p,200)
+    v=title.input_value()
+    if v!='Should I talk to my daughter about her…': probs.append(f'after typing, the title is "{v}"')
+    p.keyboard.type(' She is tired.');settle(p,200)
+    if title.input_value()!=v: probs.append('typing past the eighth word changed the title')
+    box.fill('');settle(p,200)
+    if title.input_value()!='': probs.append(f'an empty issue left the title "{title.input_value()}"')
+    box.fill('Should I move?');settle(p,200)
+    if title.input_value()!='Should I move': probs.append(f'a short issue did not refill the title: "{title.input_value()}"')   # trailing punctuation is dropped (A32)
+    title.fill('My own title');settle(p,100);box.click();p.keyboard.press('End');p.keyboard.type(' Soon.');settle(p,200)
+    if title.input_value()!='My own title': probs.append(f'the person\'s title was overwritten: "{title.input_value()}"')
+    if s.calls() or s.since(): probs.append('something was sent')
+  assert not probs,' | '.join(probs)
+
+def classic_links():
+  # I31, A38: one human-written link per tradition, Anglican included; opening the panel sends nothing.
+  probs=[]
+  with Session(390,844) as s:
+    p=s.open();s.mark();quick_tap(s);forms_filled(p);settle(p,1000)
+    p.locator('[data-guide-action=historic]').first.click();p.locator('#reader').wait_for();settle(p,300)
+    m=p.evaluate("()=>[...document.querySelectorAll('#reader section')].map(sec=>({h:sec.querySelector('h3')?.textContent.trim(),links:[...sec.querySelectorAll('a[href]')].map(a=>a.href)}))")
+    want=['Early Church · Augustine','Medieval · Anselm','Puritan tradition · Matthew Henry','Anglican · Church of England topical prayers']
+    if [x['h'] for x in m]!=want: probs.append(f"tradition headings are {[x['h'] for x in m]}")
+    for x in m:
+      if len(x['links'])!=1 or not x['links'][0].startswith('https://'): probs.append(f"{x['h']}: links {x['links']}")
+    if s.calls() or s.since(): probs.append('opening the panel sent something: '+', '.join(s.since()[:3]))
+    close_reader(p)
+  assert not probs,' | '.join(probs)
+
 def typing_no_jump():
   probs=[]
   with Session(390,844) as s:
@@ -1248,7 +1362,7 @@ def look_rules():
 
 CHECKS=[first_screen,quick_issue_only,quick_blank_issue,quick_double_tap,go_to_save,ai_quick_path,deep_path_navigation,one_primary_per_screen,save_promise_line,
   safety_list,matrix_no_overflow,tap_targets,min_font,rotation,simulated_safe_area,landscape_keyboard,csp_zero_violations,forced_colors,typed_scripts,
-  quick_path_keeps_whems_in_dom,quick_sends_nothing,typing_no_jump,bar_hidden_while_typing,bar_after_two_screens,bar_phone_single_button,quick_lands_on_prayer,replace_only_when_edited,header_height,first_screen_density,line_spacing,look_rules]
+  quick_path_keeps_whems_in_dom,quick_sends_nothing,typing_no_jump,bar_hidden_while_typing,bar_after_two_screens,bar_phone_single_button,quick_lands_on_prayer,replace_only_when_edited,prayer_numbers_and_links,heading_and_field_colours,librarian_wording,title_suggestion,classic_links,header_height,first_screen_density,line_spacing,look_rules]
 
 results=[]
 def run(fn):
