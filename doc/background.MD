@@ -591,6 +591,8 @@ Use device-level security if the journal contains sensitive material.
 
 AI guidance is opt-in.
 
+From 22-11 '26 the app calls this "AI suggestions" wherever a person reads it, and the consent sentence compares AI to a librarian who suggests but does not guide; the section headings in this document keep the older term.
+
 When the user deliberately chooses AI guidance after consent, the app sends the **current material needed for that request** to the configured OpenAI service.
 
 The design intent is to send current fields such as:

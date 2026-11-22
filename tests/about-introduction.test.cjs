@@ -13,5 +13,5 @@ test('About, Scripture API, journal schema, core theology, catalogue and licence
 // UI, output parsing and the guidance endpoint intentionally change; these boundaries do not.
 const hashes={'about.js':'ca1bd2b105039e345ca19b234715d6e66dbabfcd','api/scripture.js':'1d84ac4eb9ccfcfb71e44b0fd7cdb3981976a10c','core.js':'136e86c3e5223f03a428ff23f2a383208f7821a3','journal.js':'b31725369d97511edac8cc826263eb55799c934e','catalogue.js':'5277b0957469c32b639a2faa07a2d9bb3652bbb3','LICENSE':'f288702d2fa16d3cdf0035b15a9fcbc552cd88e7'};
 for(const [file,expected]of Object.entries(hashes)){const b=fs.readFileSync(path.join(__dirname,'..',file));assert.equal(crypto.createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),expected,file);}
-assert.match(src('journey-ui.js'),/I agree to send the current issue and replies for AI guidance/);
+assert.match(src('journey-ui.js'),/I agree to send the current issue and replies to AI for suggestions/);   // A37
 });
